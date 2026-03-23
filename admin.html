@@ -3,128 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIYAMBOSS - Master Admin</title>
+    <title>SIYAMBOSS - Elite Admin</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --red: #f6465d; --green: #2ebd85; --silver: #c0c0c0; --bronze: #cd7f32; }
+        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --red: #f6465d; --green: #2ebd85; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Stats Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; text-align: center; }
         .stat-card h2 { margin: 10px 0 0 0; color: var(--gold); font-size: 32px; }
 
-        /* Forms */
         .form-box { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--gold); margin-bottom: 30px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0 15px 0; background: #2b2f36; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; outline: none; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0 15px 0; background: #2b2f36; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
         
-        /* Tables */
         .table-container { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; overflow-x: auto; margin-bottom: 30px; }
-        h3 { color: var(--gold); margin-top: 0; display: flex; align-items: center; gap: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; font-size: 14px; }
-        th { color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+        th { color: var(--gold); text-transform: uppercase; font-size: 11px; }
 
-        /* Buttons */
         button { cursor: pointer; border: none; font-weight: bold; transition: 0.3s; border-radius: 6px; }
-        .btn-main { background: var(--gold); color: #000; width: 100%; padding: 15px; font-size: 16px; margin-top: 10px; }
-        .btn-approve { background: var(--green); color: #fff; padding: 8px 12px; }
-        .btn-reject { background: var(--red); color: #fff; padding: 8px 12px; }
+        .btn-main { background: var(--gold); color: #000; width: 100%; padding: 15px; font-size: 16px; }
+        .btn-edit { background: #3498db; color: #fff; padding: 6px 10px; margin-right: 5px; }
+        .btn-off { background: var(--red); color: #fff; padding: 6px 10px; }
+        .btn-on { background: var(--green); color: #fff; padding: 6px 10px; }
         
-        /* Leaderboard Specifics */
-        .rank-1 { color: var(--gold); font-weight: bold; font-size: 18px; }
-        .rank-2 { color: var(--silver); font-weight: bold; font-size: 16px; }
-        .rank-3 { color: var(--bronze); font-weight: bold; font-size: 15px; }
-        .badge { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-left: 8px; border: 1px solid; }
-        .badge-1 { background: rgba(243, 186, 47, 0.1); color: var(--gold); }
-        .badge-2 { background: rgba(192, 192, 192, 0.1); color: var(--silver); }
-        .badge-3 { background: rgba(205, 127, 50, 0.1); color: var(--bronze); }
-        
-        .progress-bar { background: #333; height: 6px; border-radius: 10px; margin-top: 8px; overflow: hidden; width: 100px; }
-        .progress-fill { background: var(--gold); height: 100%; }
+        /* Modal Style */
+        #editModal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); padding:30px; border:2px solid var(--gold); z-index:1001; border-radius:15px; width:90%; max-width:400px; }
+        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header style="padding: 20px 0;">
-        <h1 style="margin:0; color: var(--gold); text-shadow: 0 0 10px rgba(243,186,47,0.3);">
-            <i class="fas fa-crown"></i> SIYAMBOSS MASTER DASHBOARD
-        </h1>
-        <p style="color: gray; margin: 5px 0 0 0;">Manage users, tasks, and withdrawals in real-time.</p>
-    </header>
+    <h1 style="color: var(--gold);"><i class="fas fa-tools"></i> SIYAMBOSS MASTER ADMIN</h1>
 
     <div class="grid">
-        <div class="stat-card">
-            <i class="fas fa-users" style="color: var(--gold); font-size: 24px;"></i>
-            <small style="display:block; margin-top:10px; color: gray;">Total Network Users</small>
-            <h2 id="totalUsers">0</h2>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-spinner" style="color: var(--red); font-size: 24px;"></i>
-            <small style="display:block; margin-top:10px; color: gray;">Pending Payouts</small>
-            <h2 id="pendingCount">0</h2>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-bolt" style="color: var(--green); font-size: 24px;"></i>
-            <small style="display:block; margin-top:10px; color: gray;">Live Mining Nodes</small>
-            <h2 id="activeTasks">0</h2>
-        </div>
-    </div>
-
-    <div class="table-container">
-        <h3><i class="fas fa-trophy"></i> Top Promoters (Leaderboard)</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 80px;">Rank</th>
-                    <th>User Name / Name</th>
-                    <th>Telegram ID (UID)</th>
-                    <th>Total Referrals</th>
-                </tr>
-            </thead>
-            <tbody id="leaderboardBody"></tbody>
-        </table>
+        <div class="stat-card"><small>Total Users</small><h2 id="totalUsers">0</h2></div>
+        <div class="stat-card"><small>Pending Withdrawal</small><h2 id="pendingCount">0</h2></div>
+        <div class="stat-card"><small>Active Tasks</small><h2 id="activeTasks">0</h2></div>
     </div>
 
     <div class="form-box">
-        <h3><i class="fas fa-plus-square"></i> Create New Mining Node (Task)</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div>
-                <label>Task Title</label>
-                <input type="text" id="tTitle" placeholder="e.g. Subscribe to YouTube">
-            </div>
-            <div>
-                <label>Reward Reward ($)</label>
-                <input type="number" id="tReward" step="0.001" placeholder="0.05">
-            </div>
+        <h3><i class="fas fa-wallet"></i> Manage Withdraw Methods</h3>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="newMethodName" placeholder="Method Name (e.g. Bkash, Binance)">
+            <button class="btn-main" style="width: 200px;" onclick="addWithdrawMethod()">Add Method</button>
         </div>
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-            <div>
-                <label>Target Link</label>
-                <input type="text" id="tLink" placeholder="https://t.me/yourlink">
-            </div>
-            <div>
-                <label>User Limit (Target)</label>
-                <input type="number" id="tLimit" placeholder="e.g. 500">
-            </div>
+        <div id="methodList" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+    </div>
+
+    <div class="form-box">
+        <h3><i class="fas fa-plus-circle"></i> Create/Publish Mining Node</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <input type="text" id="tTitle" placeholder="Task Name">
+            <input type="number" id="tReward" step="0.01" placeholder="Price ($)">
+            <input type="text" id="tLink" placeholder="Target Link">
+            <input type="number" id="tLimit" placeholder="Target User Limit">
         </div>
-        <button class="btn-main" onclick="addTask()"><i class="fas fa-rocket"></i> PUBLISH TO ALL USERS</button>
+        <button class="btn-main" onclick="addTask()">Publish Task</button>
     </div>
 
     <div class="table-container">
-        <h3><i class="fas fa-chart-line"></i> Task Completion & Status</h3>
+        <h3><i class="fas fa-tasks"></i> Active Tasks & Controls</h3>
         <table>
             <thead>
                 <tr>
-                    <th>Node Title</th>
+                    <th>Task Name</th>
                     <th>Price</th>
-                    <th>Completion Progress</th>
+                    <th>Progress</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="taskStatsBody"></tbody>
@@ -132,13 +83,13 @@
     </div>
 
     <div class="table-container">
-        <h3><i class="fas fa-university"></i> Withdrawal Requests (Manual Payout)</h3>
+        <h3><i class="fas fa-university"></i> Withdrawal Requests</h3>
         <table>
             <thead>
                 <tr>
-                    <th>User Detail</th>
-                    <th>Exchange</th>
-                    <th>Recipient Info (UID/Email)</th>
+                    <th>User</th>
+                    <th>Method</th>
+                    <th>Address/UID</th>
                     <th>Amount</th>
                     <th>Action</th>
                 </tr>
@@ -146,11 +97,19 @@
             <tbody id="withdrawBody"></tbody>
         </table>
     </div>
+</div>
 
+<div class="overlay" id="overlay" onclick="closeEdit()"></div>
+<div id="editModal">
+    <h3 class="gold">Edit Task</h3>
+    <input type="hidden" id="editKey">
+    <label>Name</label><input type="text" id="editTitle">
+    <label>Price ($)</label><input type="number" id="editReward" step="0.01">
+    <label>Target Limit</label><input type="number" id="editLimit">
+    <button class="btn-main" onclick="saveEdit()">Save Changes</button>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
         databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
@@ -159,49 +118,21 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- DATA INITIALIZATION ---
     function init() {
-        // 1. Load Total Users & Leaderboard
-        db.ref('users').on('value', s => {
-            document.getElementById('totalUsers').innerText = s.numChildren();
-            
-            const leaderboardBody = document.getElementById('leaderboardBody');
-            leaderboardBody.innerHTML = "";
-            let usersArray = [];
-            
+        db.ref('users').on('value', s => document.getElementById('totalUsers').innerText = s.numChildren());
+
+        // Load Withdraw Methods
+        db.ref('withdraw_methods').on('value', s => {
+            const container = document.getElementById('methodList');
+            container.innerHTML = "";
             s.forEach(child => {
-                const u = child.val();
-                usersArray.push({
-                    id: child.key,
-                    name: u.name || "User",
-                    referrals: u.referrals || 0
-                });
-            });
-
-            // Sort by Referrals (Highest to Lowest)
-            usersArray.sort((a, b) => b.referrals - a.referrals);
-
-            usersArray.slice(0, 10).forEach((user, index) => {
-                let rank = index + 1;
-                let rankStyle = "";
-                let badge = "";
-
-                if(rank === 1) { rankStyle = "rank-1"; badge = '<span class="badge badge-1">TOP 1</span>'; }
-                else if(rank === 2) { rankStyle = "rank-2"; badge = '<span class="badge badge-2">TOP 2</span>'; }
-                else if(rank === 3) { rankStyle = "rank-3"; badge = '<span class="badge badge-3">TOP 3</span>'; }
-
-                leaderboardBody.innerHTML += `
-                    <tr>
-                        <td class="${rankStyle}">${rank}</td>
-                        <td><b>${user.name}</b> ${badge}</td>
-                        <td><code>${user.id}</code></td>
-                        <td style="color:var(--gold); font-weight:bold;">${user.referrals} Members</td>
-                    </tr>
-                `;
+                container.innerHTML += `<span style="background:#2b2f36; padding:5px 15px; border-radius:20px; border:1px solid var(--gold); font-size:12px;">
+                    ${child.val().name} <i class="fas fa-times" style="cursor:pointer; margin-left:5px; color:var(--red);" onclick="deleteMethod('${child.key}')"></i>
+                </span>`;
             });
         });
 
-        // 2. Load Withdrawal Requests
+        // Load Withdrawals
         db.ref('withdrawals').on('value', s => {
             const tbody = document.getElementById('withdrawBody');
             tbody.innerHTML = "";
@@ -210,24 +141,17 @@
                 const w = child.val();
                 if(w.status === "Pending") {
                     pCount++;
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><b>${w.userName}</b><br><small>${w.userId}</small></td>
-                            <td><span style="border:1px solid #444; padding:2px 5px; border-radius:4px;">${w.exchange}</span></td>
-                            <td><code style="background:#000; padding:5px; border-radius:4px; color:var(--gold);">${w.address}</code></td>
-                            <td style="color:var(--green); font-weight:bold;">$${w.amount}</td>
-                            <td>
-                                <button class="btn-approve" onclick="manageWithdraw('${child.key}', 'Approved')">Approve</button>
-                                <button class="btn-reject" onclick="manageWithdraw('${child.key}', 'Rejected')">Reject</button>
-                            </td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr>
+                        <td>${w.userName}</td><td>${w.exchange}</td><td>${w.address}</td><td>$${w.amount}</td>
+                        <td><button class="btn-on" onclick="manageWithdraw('${child.key}', 'Approved')">Approve</button>
+                        <button class="btn-off" onclick="manageWithdraw('${child.key}', 'Rejected')">Reject</button></td>
+                    </tr>`;
                 }
             });
             document.getElementById('pendingCount').innerText = pCount;
         });
 
-        // 3. Load Tasks
+        // Load Tasks
         db.ref('tasks').on('value', s => {
             const tbody = document.getElementById('taskStatsBody');
             tbody.innerHTML = "";
@@ -235,66 +159,69 @@
             s.forEach(child => {
                 tCount++;
                 const t = child.val();
-                const comp = t.completedCount || 0;
-                const target = t.targetMembers || 1;
-                const perc = Math.min((comp / target) * 100, 100);
+                const statusBtn = t.status === 'off' ? 
+                    `<button class="btn-on" onclick="toggleTask('${child.key}', 'on')">Turn ON</button>` : 
+                    `<button class="btn-off" onclick="toggleTask('${child.key}', 'off')">Turn OFF</button>`;
                 
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>${t.title}</b></td>
-                        <td style="color:var(--gold);">$${t.reward}</td>
-                        <td>
-                            <small>${comp} / ${target}</small>
-                            <div class="progress-bar"><div class="progress-fill" style="width:${perc}%"></div></div>
-                        </td>
-                        <td>${comp >= target ? '<span style="color:var(--red); font-weight:bold;">COMPLETED</span>' : '<span style="color:var(--green);">ACTIVE</span>'}</td>
-                        <td><button class="btn-reject" style="background:#333;" onclick="deleteTask('${child.key}')">Remove</button></td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr>
+                    <td>${t.title}</td><td>$${t.reward}</td>
+                    <td>${t.completedCount || 0} / ${t.targetMembers}</td>
+                    <td>${t.status === 'off' ? '<span style="color:red">OFF</span>' : '<span style="color:green">ACTIVE</span>'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="openEdit('${child.key}', '${t.title}', ${t.reward}, ${t.targetMembers})">Edit</button>
+                        ${statusBtn}
+                    </td>
+                </tr>`;
             });
             document.getElementById('activeTasks').innerText = tCount;
         });
     }
 
-    // --- ACTIONS ---
     function addTask() {
         const title = document.getElementById('tTitle').value;
         const reward = document.getElementById('tReward').value;
         const link = document.getElementById('tLink').value;
         const limit = document.getElementById('tLimit').value;
+        if(!title || !reward || !limit) return alert("Fill all fields");
+        db.ref('tasks').push({ title, reward: parseFloat(reward), link, targetMembers: parseInt(limit), completedCount: 0, status: 'on' });
+        alert("Task Added!");
+    }
 
-        if(!title || !reward || !limit) return alert("Please fill all fields!");
+    function toggleTask(key, status) { db.ref('tasks/' + key).update({ status: status }); }
 
-        db.ref('tasks').push({
-            title,
-            reward: parseFloat(reward),
-            link,
-            targetMembers: parseInt(limit),
-            completedCount: 0
-        }).then(() => {
-            alert("New Task Published Successfully!");
-            document.getElementById('tTitle').value = "";
-            document.getElementById('tReward').value = "";
-            document.getElementById('tLink').value = "";
-            document.getElementById('tLimit').value = "";
+    function openEdit(key, title, reward, limit) {
+        document.getElementById('editKey').value = key;
+        document.getElementById('editTitle').value = title;
+        document.getElementById('editReward').value = reward;
+        document.getElementById('editLimit').value = limit;
+        document.getElementById('editModal').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function saveEdit() {
+        const key = document.getElementById('editKey').value;
+        db.ref('tasks/' + key).update({
+            title: document.getElementById('editTitle').value,
+            reward: parseFloat(document.getElementById('editReward').value),
+            targetMembers: parseInt(document.getElementById('editLimit').value)
         });
+        closeEdit();
+        alert("Task Updated!");
     }
 
-    function manageWithdraw(key, status) {
-        if(confirm("Action: " + status + " - Are you sure?")) {
-            db.ref('withdrawals/' + key).update({ status: status })
-            .then(() => alert("Payout request " + status));
-        }
+    function closeEdit() { document.getElementById('editModal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
+
+    function addWithdrawMethod() {
+        const name = document.getElementById('newMethodName').value;
+        if(name) db.ref('withdraw_methods').push({ name });
+        document.getElementById('newMethodName').value = "";
     }
 
-    function deleteTask(key) {
-        if(confirm("Delete this task?")) {
-            db.ref('tasks/' + key).remove();
-        }
-    }
+    function deleteMethod(key) { db.ref('withdraw_methods/' + key).remove(); }
+
+    function manageWithdraw(key, status) { db.ref('withdrawals/' + key).update({ status: status }); }
 
     init();
 </script>
-
 </body>
 </html>
