@@ -3,164 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIYAMBOSS - Admin Panel</title>
+    <title>SIYAMBOSS - Master Admin</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; background: #0b0e11; color: #fff; margin: 0; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .card { background: #1e2329; padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        .gold { color: #f3ba2f; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
-        th { background: #2b2f36; color: #f3ba2f; }
-        button { cursor: pointer; border: none; border-radius: 5px; padding: 5px 10px; font-weight: bold; }
-        .btn-approve { background: #2ebd85; color: #fff; margin-right: 5px; }
-        .btn-reject { background: #f6465d; color: #fff; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0 15px 0; background: #2b2f36; border: 1px solid #444; color: #fff; border-radius: 5px; }
-        .form-section { background: #181a20; padding: 20px; border-radius: 10px; border: 1px solid #f3ba2f; margin-bottom: 30px; }
+        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --red: #f6465d; --green: #2ebd85; --silver: #c0c0c0; --bronze: #cd7f32; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Stats Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .stat-card h2 { margin: 10px 0 0 0; color: var(--gold); font-size: 32px; }
+
+        /* Forms */
+        .form-box { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--gold); margin-bottom: 30px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0 15px 0; background: #2b2f36; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; outline: none; }
+        
+        /* Tables */
+        .table-container { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; overflow-x: auto; margin-bottom: 30px; }
+        h3 { color: var(--gold); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; font-size: 14px; }
+        th { color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+
+        /* Buttons */
+        button { cursor: pointer; border: none; font-weight: bold; transition: 0.3s; border-radius: 6px; }
+        .btn-main { background: var(--gold); color: #000; width: 100%; padding: 15px; font-size: 16px; margin-top: 10px; }
+        .btn-approve { background: var(--green); color: #fff; padding: 8px 12px; }
+        .btn-reject { background: var(--red); color: #fff; padding: 8px 12px; }
+        
+        /* Leaderboard Specifics */
+        .rank-1 { color: var(--gold); font-weight: bold; font-size: 18px; }
+        .rank-2 { color: var(--silver); font-weight: bold; font-size: 16px; }
+        .rank-3 { color: var(--bronze); font-weight: bold; font-size: 15px; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-left: 8px; border: 1px solid; }
+        .badge-1 { background: rgba(243, 186, 47, 0.1); color: var(--gold); }
+        .badge-2 { background: rgba(192, 192, 192, 0.1); color: var(--silver); }
+        .badge-3 { background: rgba(205, 127, 50, 0.1); color: var(--bronze); }
+        
+        .progress-bar { background: #333; height: 6px; border-radius: 10px; margin-top: 8px; overflow: hidden; width: 100px; }
+        .progress-fill { background: var(--gold); height: 100%; }
     </style>
 </head>
 <body>
 
-    <h2 class="gold"><i class="fas fa-user-shield"></i> SIYAMBOSS Admin</h2>
+<div class="container">
+    <header style="padding: 20px 0;">
+        <h1 style="margin:0; color: var(--gold); text-shadow: 0 0 10px rgba(243,186,47,0.3);">
+            <i class="fas fa-crown"></i> SIYAMBOSS MASTER DASHBOARD
+        </h1>
+        <p style="color: gray; margin: 5px 0 0 0;">Manage users, tasks, and withdrawals in real-time.</p>
+    </header>
 
     <div class="grid">
-        <div class="card">
-            <small>Total Users</small>
-            <h2 id="totalUsers" class="gold">0</h2>
+        <div class="stat-card">
+            <i class="fas fa-users" style="color: var(--gold); font-size: 24px;"></i>
+            <small style="display:block; margin-top:10px; color: gray;">Total Network Users</small>
+            <h2 id="totalUsers">0</h2>
         </div>
-        <div class="card">
-            <small>Pending Withdrawals</small>
-            <h2 id="pendingCount" style="color: #f6465d;">0</h2>
+        <div class="stat-card">
+            <i class="fas fa-spinner" style="color: var(--red); font-size: 24px;"></i>
+            <small style="display:block; margin-top:10px; color: gray;">Pending Payouts</small>
+            <h2 id="pendingCount">0</h2>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-bolt" style="color: var(--green); font-size: 24px;"></i>
+            <small style="display:block; margin-top:10px; color: gray;">Live Mining Nodes</small>
+            <h2 id="activeTasks">0</h2>
         </div>
     </div>
 
-    <div class="form-section">
-        <h3 class="gold">Add New Task / Update</h3>
-        <label>Task Title</label>
-        <input type="text" id="taskTitle" placeholder="e.g. Join Telegram">
-        <label>Reward (USD)</label>
-        <input type="number" id="taskReward" step="0.01" placeholder="0.10">
-        <label>Task Link</label>
-        <input type="text" id="taskLink" placeholder="https://t.me/...">
-        <button class="btn-approve" style="width: 100%; padding: 12px;" onclick="addTask()">ADD TASK</button>
-    </div>
-
-    <div class="card" style="margin-bottom: 30px;">
-        <h3 class="gold"><i class="fas fa-chart-line"></i> Task Completion Stats</h3>
+    <div class="table-container">
+        <h3><i class="fas fa-trophy"></i> Top Promoters (Leaderboard)</h3>
         <table>
             <thead>
                 <tr>
-                    <th>Task Name</th>
-                    <th>Reward</th>
-                    <th>Completed By</th>
+                    <th style="width: 80px;">Rank</th>
+                    <th>User Name / Name</th>
+                    <th>Telegram ID (UID)</th>
+                    <th>Total Referrals</th>
                 </tr>
             </thead>
-            <tbody id="taskStatsTable"></tbody>
+            <tbody id="leaderboardBody"></tbody>
         </table>
     </div>
 
-    <div class="card">
-        <h3 style="color: #f3ba2f;"><i class="fas fa-wallet"></i> Pending Requests</h3>
+    <div class="form-box">
+        <h3><i class="fas fa-plus-square"></i> Create New Mining Node (Task)</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label>Task Title</label>
+                <input type="text" id="tTitle" placeholder="e.g. Subscribe to YouTube">
+            </div>
+            <div>
+                <label>Reward Reward ($)</label>
+                <input type="number" id="tReward" step="0.001" placeholder="0.05">
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+            <div>
+                <label>Target Link</label>
+                <input type="text" id="tLink" placeholder="https://t.me/yourlink">
+            </div>
+            <div>
+                <label>User Limit (Target)</label>
+                <input type="number" id="tLimit" placeholder="e.g. 500">
+            </div>
+        </div>
+        <button class="btn-main" onclick="addTask()"><i class="fas fa-rocket"></i> PUBLISH TO ALL USERS</button>
+    </div>
+
+    <div class="table-container">
+        <h3><i class="fas fa-chart-line"></i> Task Completion & Status</h3>
         <table>
             <thead>
                 <tr>
-                    <th>User</th>
-                    <th>Method</th>
-                    <th>UID/Gmail</th>
+                    <th>Node Title</th>
+                    <th>Price</th>
+                    <th>Completion Progress</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="taskStatsBody"></tbody>
+        </table>
+    </div>
+
+    <div class="table-container">
+        <h3><i class="fas fa-university"></i> Withdrawal Requests (Manual Payout)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>User Detail</th>
+                    <th>Exchange</th>
+                    <th>Recipient Info (UID/Email)</th>
                     <th>Amount</th>
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody id="withdrawTable"></tbody>
+            <tbody id="withdrawBody"></tbody>
         </table>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
-            databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
-            projectId: "free-income-8a793"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+</div>
 
-        // Load Stats & Data
-        function loadAdminData() {
-            // Count Total Users
-            db.ref('users').on('value', s => {
-                document.getElementById('totalUsers').innerText = s.numChildren();
-            });
+<script>
+    // --- FIREBASE CONFIG ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
+        databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
+        projectId: "free-income-8a793"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-            // Load Withdrawals
-            db.ref('withdrawals').on('value', s => {
-                const list = document.getElementById('withdrawTable');
-                list.innerHTML = "";
-                let pending = 0;
-                
-                s.forEach(child => {
-                    const data = child.val();
-                    if(data.status === "Pending") {
-                        pending++;
-                        list.innerHTML += `
-                            <tr>
-                                <td>${data.userName}</td>
-                                <td>${data.exchange}</td>
-                                <td>${data.address}</td>
-                                <td>$${data.amount}</td>
-                                <td>
-                                    <button class="btn-approve" onclick="updateWithdraw('${child.key}', 'Approved')">Approve</button>
-                                    <button class="btn-reject" onclick="updateWithdraw('${child.key}', 'Rejected')">Reject</button>
-                                </td>
-                            </tr>
-                        `;
-                    }
+    // --- DATA INITIALIZATION ---
+    function init() {
+        // 1. Load Total Users & Leaderboard
+        db.ref('users').on('value', s => {
+            document.getElementById('totalUsers').innerText = s.numChildren();
+            
+            const leaderboardBody = document.getElementById('leaderboardBody');
+            leaderboardBody.innerHTML = "";
+            let usersArray = [];
+            
+            s.forEach(child => {
+                const u = child.val();
+                usersArray.push({
+                    id: child.key,
+                    name: u.name || "User",
+                    referrals: u.referrals || 0
                 });
-                document.getElementById('pendingCount').innerText = pending;
             });
 
-            // Load Task Stats
-            db.ref('tasks').on('value', s => {
-                const taskTable = document.getElementById('taskStatsTable');
-                taskTable.innerHTML = "";
-                s.forEach(child => {
-                    const task = child.val();
-                    taskTable.innerHTML += `
+            // Sort by Referrals (Highest to Lowest)
+            usersArray.sort((a, b) => b.referrals - a.referrals);
+
+            usersArray.slice(0, 10).forEach((user, index) => {
+                let rank = index + 1;
+                let rankStyle = "";
+                let badge = "";
+
+                if(rank === 1) { rankStyle = "rank-1"; badge = '<span class="badge badge-1">TOP 1</span>'; }
+                else if(rank === 2) { rankStyle = "rank-2"; badge = '<span class="badge badge-2">TOP 2</span>'; }
+                else if(rank === 3) { rankStyle = "rank-3"; badge = '<span class="badge badge-3">TOP 3</span>'; }
+
+                leaderboardBody.innerHTML += `
+                    <tr>
+                        <td class="${rankStyle}">${rank}</td>
+                        <td><b>${user.name}</b> ${badge}</td>
+                        <td><code>${user.id}</code></td>
+                        <td style="color:var(--gold); font-weight:bold;">${user.referrals} Members</td>
+                    </tr>
+                `;
+            });
+        });
+
+        // 2. Load Withdrawal Requests
+        db.ref('withdrawals').on('value', s => {
+            const tbody = document.getElementById('withdrawBody');
+            tbody.innerHTML = "";
+            let pCount = 0;
+            s.forEach(child => {
+                const w = child.val();
+                if(w.status === "Pending") {
+                    pCount++;
+                    tbody.innerHTML += `
                         <tr>
-                            <td>${task.title}</td>
-                            <td>$${task.reward}</td>
-                            <td class="gold"><b>${task.completedCount || 0} Users</b></td>
+                            <td><b>${w.userName}</b><br><small>${w.userId}</small></td>
+                            <td><span style="border:1px solid #444; padding:2px 5px; border-radius:4px;">${w.exchange}</span></td>
+                            <td><code style="background:#000; padding:5px; border-radius:4px; color:var(--gold);">${w.address}</code></td>
+                            <td style="color:var(--green); font-weight:bold;">$${w.amount}</td>
+                            <td>
+                                <button class="btn-approve" onclick="manageWithdraw('${child.key}', 'Approved')">Approve</button>
+                                <button class="btn-reject" onclick="manageWithdraw('${child.key}', 'Rejected')">Reject</button>
+                            </td>
                         </tr>
                     `;
-                });
+                }
             });
-        }
+            document.getElementById('pendingCount').innerText = pCount;
+        });
 
-        // Add Task Function
-        function addTask() {
-            const title = document.getElementById('taskTitle').value;
-            const reward = document.getElementById('taskReward').value;
-            const link = document.getElementById('taskLink').value;
-
-            if(!title || !reward) return alert("Fill data");
-
-            db.ref('tasks').push({
-                title, reward: parseFloat(reward), link, completedCount: 0
-            }).then(() => {
-                alert("Task Added!");
-                document.getElementById('taskTitle').value = "";
+        // 3. Load Tasks
+        db.ref('tasks').on('value', s => {
+            const tbody = document.getElementById('taskStatsBody');
+            tbody.innerHTML = "";
+            let tCount = 0;
+            s.forEach(child => {
+                tCount++;
+                const t = child.val();
+                const comp = t.completedCount || 0;
+                const target = t.targetMembers || 1;
+                const perc = Math.min((comp / target) * 100, 100);
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${t.title}</b></td>
+                        <td style="color:var(--gold);">$${t.reward}</td>
+                        <td>
+                            <small>${comp} / ${target}</small>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${perc}%"></div></div>
+                        </td>
+                        <td>${comp >= target ? '<span style="color:var(--red); font-weight:bold;">COMPLETED</span>' : '<span style="color:var(--green);">ACTIVE</span>'}</td>
+                        <td><button class="btn-reject" style="background:#333;" onclick="deleteTask('${child.key}')">Remove</button></td>
+                    </tr>
+                `;
             });
-        }
+            document.getElementById('activeTasks').innerText = tCount;
+        });
+    }
 
-        // Approve/Reject Function
-        function updateWithdraw(key, status) {
+    // --- ACTIONS ---
+    function addTask() {
+        const title = document.getElementById('tTitle').value;
+        const reward = document.getElementById('tReward').value;
+        const link = document.getElementById('tLink').value;
+        const limit = document.getElementById('tLimit').value;
+
+        if(!title || !reward || !limit) return alert("Please fill all fields!");
+
+        db.ref('tasks').push({
+            title,
+            reward: parseFloat(reward),
+            link,
+            targetMembers: parseInt(limit),
+            completedCount: 0
+        }).then(() => {
+            alert("New Task Published Successfully!");
+            document.getElementById('tTitle').value = "";
+            document.getElementById('tReward').value = "";
+            document.getElementById('tLink').value = "";
+            document.getElementById('tLimit').value = "";
+        });
+    }
+
+    function manageWithdraw(key, status) {
+        if(confirm("Action: " + status + " - Are you sure?")) {
             db.ref('withdrawals/' + key).update({ status: status })
-            .then(() => alert("Request " + status));
+            .then(() => alert("Payout request " + status));
         }
+    }
 
-        loadAdminData();
-    </script>
+    function deleteTask(key) {
+        if(confirm("Delete this task?")) {
+            db.ref('tasks/' + key).remove();
+        }
+    }
+
+    init();
+</script>
+
 </body>
 </html>
