@@ -1,52 +1,163 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SIYAMBOSS - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIYAMBOSS - Master Admin</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; background: #1a1a2e; color: white; padding: 20px; }
-        .box { background: #16213e; padding: 20px; border-radius: 12px; max-width: 400px; margin: auto; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
-        button { width: 100%; background: #00d2ff; color: #1a1a2e; padding: 12px; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
-        .item { background: #0f3460; padding: 10px; margin-top: 10px; border-radius: 8px; display: flex; justify-content: space-between; }
+        :root { --primary: #f3ba2f; --bg: #121212; --card: #1e1e1e; --text: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        h2 { border-left: 4px solid var(--primary); padding-left: 10px; color: var(--primary); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; font-size: 14px; }
+        th { background: #252525; color: var(--primary); }
+        
+        input, button { padding: 10px; border-radius: 5px; border: 1px solid #444; }
+        input { background: #2b2b2b; color: white; width: 150px; }
+        
+        .btn { cursor: pointer; border: none; font-weight: bold; padding: 8px 15px; border-radius: 5px; }
+        .btn-add { background: var(--primary); color: #000; }
+        .btn-ban { background: #ff4d4d; color: white; }
+        .btn-unban { background: #2ebd85; color: white; }
+        .btn-save { background: #0088cc; color: white; }
+        
+        .status-banned { color: #ff4d4d; font-weight: bold; }
+        .status-active { color: #2ebd85; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Admin Control</h2>
-        <input id="n" type="text" placeholder="Task Name">
-        <input id="l" type="text" placeholder="Link (https://...)">
-        <input id="r" type="number" placeholder="Reward (TK)">
-        <button onclick="add()">Add Task</button>
-        <div id="list"></div>
-    </div>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
-            databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
-            projectId: "free-income-8a793"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
 
-        function add() {
-            const name = document.getElementById('n').value;
-            const link = document.getElementById('l').value;
-            const reward = document.getElementById('r').value;
-            if(name && link && reward) {
-                db.ref('tasks').push({ name, link, reward: parseFloat(reward) });
-                alert("অ্যাড হয়েছে!");
+<div class="container">
+    <h1>🚀 Master Admin Panel</h1>
+
+    <div class="card">
+        <h2>Add New Mining Task</h2>
+        <input type="text" id="tName" placeholder="Task Name">
+        <input type="text" id="tLink" placeholder="Task URL">
+        <input type="number" id="tReward" step="0.001" placeholder="Reward ($)">
+        <button class="btn btn-add" onclick="addTask()">Add Task</button>
+    </div>
+
+    <div class="card">
+        <h2>User Management (Balance & Ban)</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Name</th>
+                        <th>Balance ($)</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Pending Withdrawals</h2>
+        <div id="withdrawList">Loading...</div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
+        databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
+        projectId: "free-income-8a793"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- Task Function ---
+    function addTask() {
+        const name = document.getElementById('tName').value;
+        const link = document.getElementById('tLink').value;
+        const reward = document.getElementById('tReward').value;
+        if(!name || !link || !reward) return alert("Fill all fields");
+
+        db.ref('tasks').push({ name, link, reward: parseFloat(reward) })
+          .then(() => alert("Task Added!"));
+    }
+
+    // --- Load Users (Ban & Balance System) ---
+    db.ref('users').on('value', snap => {
+        const users = snap.val();
+        const table = document.getElementById('userTable');
+        table.innerHTML = "";
+
+        for(let id in users) {
+            const u = users[id];
+            const isBanned = u.status === 'banned';
+            
+            table.innerHTML += `
+                <tr>
+                    <td>${id}</td>
+                    <td>${u.name || 'N/A'}</td>
+                    <td><input type="number" id="bal_${id}" value="${u.balance || 0}" step="0.01"></td>
+                    <td class="${isBanned ? 'status-banned' : 'status-active'}">${isBanned ? 'BANNED' : 'ACTIVE'}</td>
+                    <td>
+                        <button class="btn btn-save" onclick="updateBal('${id}')">Save</button>
+                        ${isBanned ? 
+                            `<button class="btn btn-unban" onclick="toggleBan('${id}', 'active')">Unban</button>` : 
+                            `<button class="btn btn-ban" onclick="toggleBan('${id}', 'banned')">Ban</button>`
+                        }
+                    </td>
+                </tr>
+            `;
+        }
+    });
+
+    function updateBal(id) {
+        const newBal = document.getElementById('bal_' + id).value;
+        db.ref('users/' + id).update({ balance: parseFloat(newBal) })
+          .then(() => alert("Balance Updated"));
+    }
+
+    function toggleBan(id, status) {
+        db.ref('users/' + id).update({ status: status })
+          .then(() => alert("User status updated to: " + status));
+    }
+
+    // --- Withdrawal Management ---
+    db.ref('withdrawals').on('value', snap => {
+        const list = document.getElementById('withdrawList');
+        const data = snap.val();
+        if(!data) { list.innerHTML = "No pending requests."; return; }
+        
+        let html = "<table><tr><th>User</th><th>Method</th><th>Target</th><th>Amount</th><th>Action</th></tr>";
+        for(let key in data) {
+            const w = data[key];
+            if(w.status === "Pending") {
+                html += `<tr>
+                    <td>${w.name}<br><small>${w.userId}</small></td>
+                    <td>${w.method}</td>
+                    <td>${w.target}</td>
+                    <td>$${w.amount}</td>
+                    <td>
+                        <button class="btn btn-unban" onclick="payDone('${key}')">Approve</button>
+                    </td>
+                </tr>`;
             }
         }
+        html += "</table>";
+        list.innerHTML = html;
+    });
 
-        db.ref('tasks').on('value', s => {
-            const d = s.val(); const list = document.getElementById('list'); list.innerHTML = "<h3>Active Tasks</h3>";
-            for(let id in d) {
-                list.innerHTML += `<div class="item"><span>${d[id].name}</span><button style="width:auto; padding:5px; background:red;" onclick="db.ref('tasks/${id}').remove()">X</button></div>`;
-            }
-        });
-    </script>
+    function payDone(key) {
+        db.ref('withdrawals/' + key).update({ status: "Paid" })
+          .then(() => alert("Marked as Paid!"));
+    }
+
+</script>
+
 </body>
 </html>
