@@ -2,176 +2,257 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnBearn - Super Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EarnBearn Elite - Siyam BOSS</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --border: #323539; --green: #2ebd85; --red: #f6465d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .admin-box { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        h2 { color: var(--gold); font-size: 18px; margin-bottom: 15px; border-left: 4px solid var(--gold); padding-left: 10px; }
+        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --border: #323539; --text: #848e9c; --green: #2ebd85; --red: #f6465d; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
+
+        /* UI Elements */
+        .container { padding: 20px; }
+        .header-card { background: linear-gradient(135deg, #1e2329 0%, #0b0e11 100%); border: 1px solid var(--border); border-radius: 25px; padding: 25px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .balance-val { font-size: 40px; font-weight: 900; color: var(--gold); margin: 10px 0; }
         
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border); background: #161a1e; color: #fff; outline: none; }
-        button { cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-add { background: var(--gold); color: #000; border: none; }
-        .btn-action { width: auto; padding: 5px 10px; font-size: 12px; margin: 2px; }
+        .section { display: none; animation: slideUp 0.4s ease; }
+        .active-sec { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .task-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
+        .btn-premium { width: 100%; padding: 14px; background: var(--gold); border: none; border-radius: 12px; font-weight: 800; color: #000; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .btn-premium:active { transform: scale(0.96); }
+
+        /* Trading UI */
+        .trade-box { background: #161a1e; border-radius: 20px; padding: 20px; border: 1px solid var(--border); text-align: center; }
+        #tradeTimer { font-size: 35px; font-weight: 800; color: var(--gold); margin: 15px 0; text-shadow: 0 0 10px rgba(243, 186, 47, 0.3); }
         
-        /* Table Styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th { text-align: left; color: var(--text-gray); border-bottom: 1px solid var(--border); padding: 8px; }
-        td { padding: 10px 8px; border-bottom: 1px solid #2b2f36; }
-        .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 15px; left: 5%; width: 90%; background: rgba(24, 26, 32, 0.96); display: flex; justify-content: space-around; padding: 12px 0; border-radius: 25px; border: 1px solid #2b2f36; z-index: 1000; backdrop-filter: blur(15px); }
+        .nav-item { text-align: center; color: var(--text); font-size: 10px; flex: 1; cursor: pointer; transition: 0.3s; }
+        .nav-item i { font-size: 22px; display: block; margin-bottom: 4px; }
+        .nav-item.active-nav { color: var(--gold); }
+
+        /* Vault Modal (The Game) */
+        #vaultModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .vault-ui { width: 85%; background: var(--card); border-radius: 30px; padding: 30px; border: 2px solid var(--gold); text-align: center; }
+        .vault-grid { display: flex; gap: 20px; margin: 30px 0; }
+        .v-box { flex: 1; padding: 25px; background: #161a1e; border-radius: 15px; border: 1px solid var(--border); cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align:center; color:var(--gold); margin-bottom:30px;"><i class="fas fa-user-shield"></i> EARNBEARN COMMAND CENTER</h1>
-
-    <div class="grid-container">
-        
-        <div class="admin-box">
-            <h2><i class="fas fa-plus"></i> 1. Add New Task</h2>
-            <input type="text" id="tName" placeholder="Task Name">
-            <input type="text" id="tLink" placeholder="Task Link (URL)">
-            <input type="number" id="tMember" placeholder="Target Members (e.g. 100)">
-            <input type="number" id="tReward" placeholder="Reward Amount (e.g. 0.05)" step="0.01">
-            <button class="btn-add" onclick="addTask()">CREATE TASK</button>
+<div class="container">
+    <div id="home" class="section active-sec">
+        <div class="header-card">
+            <p style="margin:0; font-size:12px; color:var(--text);">ESTIMATED REVENUE</p>
+            <div class="balance-val">$<span id="mainBal">0.0000</span></div>
+            <div style="color:var(--green); font-size:11px;"><i class="fas fa-circle"></i> MINING POOL ACTIVE</div>
         </div>
 
-        <div class="admin-box">
-            <h2><i class="fas fa-tasks"></i> 2. Task Management</h2>
-            <div style="overflow-x:auto;">
-                <table id="taskTable">
-                    <thead><tr><th>Name</th><th>Status</th><th>Action</th></tr></thead>
-                    <tbody id="taskBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="admin-box">
-            <h2><i class="fas fa-wallet"></i> 3. Payment Methods</h2>
-            <input type="text" id="mName" placeholder="Method (e.g. Bkash)">
-            <input type="number" id="mLimit" placeholder="Min Limit (e.g. 1.0)">
-            <input type="text" id="mAddress" placeholder="Note/Instruction">
-            <button class="btn-add" style="background:var(--green); color:#fff;" onclick="addMethod()">ADD METHOD</button>
-            <div id="methodList" style="margin-top:10px;"></div>
-        </div>
-
-        <div class="admin-box" style="grid-column: span 2;">
-            <h2><i class="fas fa-file-invoice-dollar"></i> 4. Withdrawal Requests</h2>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>User (UID)</th><th>Amount</th><th>Method</th><th>Details</th><th>Action</th></tr></thead>
-                    <tbody id="withdrawBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="admin-box" style="grid-column: span 2;">
-            <h2><i class="fas fa-users"></i> 5. Total User List</h2>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Name (UID)</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
-                    <tbody id="userBody"></tbody>
-                </table>
-            </div>
-        </div>
-
+        <h4 style="color:var(--gold);"><i class="fas fa-tasks"></i> Daily Missions</h4>
+        <div id="taskList"></div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
-            databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
-            projectId: "free-income-8a793"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div id="trade" class="section">
+        <div class="header-card">
+            <h3 style="margin:0; color:var(--gold);">Trade Market</h3>
+            <p style="font-size:11px; color:var(--text);">Next result in 1 minute</p>
+        </div>
 
-        // --- 1. Add Task ---
-        function addTask() {
-            const name = document.getElementById('tName').value;
-            const link = document.getElementById('tLink').value;
-            const member = document.getElementById('tMember').value;
-            const reward = document.getElementById('tReward').value;
-            if(!name || !link) return alert("Fill all!");
-            db.ref('tasks').push({ title: name, link, target: member, reward: parseFloat(reward), status: "on" });
-            alert("Task Added");
-        }
+        <div class="trade-box">
+            <div id="tradeTimer">00:60</div>
+            <input type="number" id="stake" placeholder="Enter Stake (Min $0.01)" class="btn-premium" style="background:#0b0e11; color:#fff; border:1px solid var(--border); text-align:center; margin-bottom:15px;">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-premium" style="background:var(--green); color:#fff;" onclick="startTrade('Up')">UP (1.9x)</button>
+                <button class="btn-premium" style="background:var(--red); color:#fff;" onclick="startTrade('Down')">DOWN (1.9x)</button>
+            </div>
+        </div>
+    </div>
 
-        // --- 2. Task List Management ---
-        db.ref('tasks').on('value', s => {
-            let h = ""; s.forEach(c => {
-                const t = c.val();
-                h += `<tr><td>${t.title}</td>
-                <td><span class="status-badge" style="background:${t.status=='on'?'var(--green)':'var(--red)'}">${t.status}</span></td>
-                <td>
-                    <button class="btn-action" onclick="toggleTask('${c.key}', '${t.status}')">On/Off</button>
-                    <button class="btn-action" style="background:var(--red)" onclick="deleteData('tasks/${c.key}')">Del</button>
-                </td></tr>`;
-            });
-            document.getElementById('taskBody').innerHTML = h;
+    <div id="wallet" class="section">
+        <div class="header-card">
+            <p style="margin:0; color:var(--text);">WITHDRAWABLE BALANCE</p>
+            <div class="balance-val">$<span id="wBal">0.0000</span></div>
+        </div>
+        <div class="task-card">
+            <select id="wMethod" class="btn-premium" style="background:#161a1e; color:#fff; margin-bottom:10px;"></select>
+            <input type="text" id="wAddr" placeholder="Account Details" class="btn-premium" style="background:#161a1e; color:#fff; margin-bottom:10px; text-align:center;">
+            <input type="number" id="wAmt" placeholder="Amount (Min $1.00)" class="btn-premium" style="background:#161a1e; color:#fff; margin-bottom:15px; text-align:center;">
+            <button class="btn-premium" onclick="withdraw()">WITHDRAW NOW</button>
+        </div>
+    </div>
+</div>
+
+<div id="vaultModal">
+    <div class="vault-ui">
+        <h2 style="color:var(--gold); margin:0;">Double Up?</h2>
+        <p style="font-size:11px; color:var(--text);">Choose a vault to 2X your reward!</p>
+        <div class="vault-grid">
+            <div class="v-box" onclick="playVault(1)"><i id="v1" class="fas fa-vault" style="font-size:40px; color:var(--gold);"></i></div>
+            <div class="v-box" onclick="playVault(2)"><i id="v2" class="fas fa-vault" style="font-size:40px; color:var(--gold);"></i></div>
+        </div>
+        <div id="vStatus" style="font-weight:bold; margin-bottom:20px;"></div>
+        <button id="vClose" class="btn-premium" style="background:var(--border); color:#fff; display:none;" onclick="closeVault()">CONTINUE</button>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active-nav" onclick="nav('home', this)"><i class="fas fa-home"></i>Home</div>
+    <div class="nav-item" onclick="nav('trade', this)"><i class="fas fa-chart-line"></i>Trade</div>
+    <div class="nav-item" onclick="nav('wallet', this)"><i class="fas fa-wallet"></i>Wallet</div>
+</div>
+
+<script>
+    // --- 1. Firebase Configuration ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
+        databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
+        projectId: "free-income-8a793"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const tg = window.Telegram.WebApp;
+    const user = tg.initDataUnsafe.user || { id: "654321", first_name: "Siyam" };
+    const userRef = db.ref('users/' + user.id);
+
+    let currentReward = 0;
+    let isTradeLocked = false;
+
+    // --- 2. Navigation Logic ---
+    function nav(id, el) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-sec'));
+        document.getElementById(id).classList.add('active-sec');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+        el.classList.add('active-nav');
+        tg.HapticFeedback.selectionChanged();
+    }
+
+    // --- 3. Double Up Vault (11-Step Master Logic) ---
+    function openVault(amt) {
+        currentReward = amt;
+        document.getElementById('vaultModal').style.display = 'flex';
+        document.getElementById('vStatus').innerText = "";
+        document.getElementById('vClose').style.display = 'none';
+        document.getElementById('v1').className = "fas fa-vault";
+        document.getElementById('v2').className = "fas fa-vault";
+    }
+
+    function playVault(idx) {
+        userRef.once('value', snap => {
+            let data = snap.val() || {};
+            let tries = (data.vaultTries || 0) + 1;
+            let step = tries % 11; if(step === 0) step = 11;
+
+            // Logic: 1,3,4,8 Win
+            let winSteps = [1, 3, 4, 8];
+            let isWin = winSteps.includes(step);
+
+            const sel = document.getElementById(`v${idx}`);
+            const other = document.getElementById(`v${idx==1?2:1}`);
+
+            if(isWin) {
+                sel.className = "fas fa-coins"; sel.style.color = "var(--green)";
+                document.getElementById('vStatus').innerHTML = "<span style='color:var(--green)'>SUCCESS! +2X Added</span>";
+                userRef.update({ balance: (data.balance || 0) + (currentReward * 1), vaultTries: tries });
+                tg.HapticFeedback.notificationOccurred('success');
+            } else {
+                sel.className = "fas fa-times-circle"; sel.style.color = "var(--red)";
+                other.className = "fas fa-coins"; other.style.opacity = "0.3";
+                document.getElementById('vStatus').innerHTML = "<span style='color:var(--red)'>ZERO! Reward Lost</span>";
+                userRef.update({ balance: (data.balance || 0) - currentReward, vaultTries: tries });
+                tg.HapticFeedback.notificationOccurred('error');
+            }
+            document.getElementById('vClose').style.display = 'block';
         });
-        function toggleTask(id, s) { db.ref('tasks/'+id).update({ status: s == 'on' ? 'off' : 'on' }); }
+    }
+    function closeVault() { document.getElementById('vaultModal').style.display = 'none'; }
 
-        // --- 3. Manage Payment Methods ---
-        function addMethod() {
-            const name = document.getElementById('mName').value;
-            const limit = document.getElementById('mLimit').value;
-            if(!name) return alert("Name missing");
-            db.ref('methods').push({ name, limit, address: document.getElementById('mAddress').value });
-        }
-        db.ref('methods').on('value', s => {
-            let h = ""; s.forEach(c => {
-                h += `<div style="background:#2b2f36; padding:8px; margin:5px 0; border-radius:5px; display:flex; justify-content:space-between;">
-                <span>${c.val().name} ($${c.val().limit})</span>
-                <button class="btn-action" style="background:var(--red)" onclick="deleteData('methods/${c.key}')">X</button></div>`;
-            });
-            document.getElementById('methodList').innerHTML = h;
-        });
+    // --- 4. Trade Logic ---
+    function startTrade(dir) {
+        if(isTradeLocked) return;
+        const amt = parseFloat(document.getElementById('stake').value);
+        if(amt < 0.01 || isNaN(amt)) return alert("Min stake $0.01");
 
-        // --- 4. Withdraw List ---
-        db.ref('withdrawRequests').on('value', s => {
-            let h = ""; s.forEach(c => {
-                const r = c.val();
-                if(r.status === "Pending") {
-                    h += `<tr><td>${r.name}<br>(${r.uid})</td><td>$${r.amt}</td><td>${r.mtd}</td><td>${r.adr}</td>
-                    <td>
-                        <button class="btn-action" style="background:var(--green)" onclick="updateStatus('withdrawRequests/${c.key}', 'Success')">Approve</button>
-                        <button class="btn-action" style="background:var(--red)" onclick="updateStatus('withdrawRequests/${c.key}', 'Rejected')">Reject</button>
-                    </td></tr>`;
+        userRef.once('value', snap => {
+            let bal = snap.val().balance || 0;
+            if(bal < amt) return alert("Insufficient Balance");
+
+            isTradeLocked = true;
+            userRef.update({ balance: bal - amt });
+            alert("Trade Locked on " + dir + "! Result in 5s.");
+
+            setTimeout(() => {
+                let win = Math.random() > 0.5; // Casino Logic
+                if(win) {
+                    let profit = amt * 1.9;
+                    userRef.update({ balance: (snap.val().balance - amt) + profit });
+                    alert("WON! +$" + profit.toFixed(4));
+                } else {
+                    alert("LOST! Try Again.");
                 }
-            });
-            document.getElementById('withdrawBody').innerHTML = h || "<tr><td colspan='5' style='text-align:center'>No Pending Requests</td></tr>";
+                isTradeLocked = false;
+                document.getElementById('stake').value = "";
+            }, 5000);
         });
+    }
 
-        // --- 5. User List Management ---
-        db.ref('users').on('value', s => {
-            let h = ""; s.forEach(c => {
-                const u = c.val();
-                h += `<tr><td>${u.first_name}<br>(${c.key})</td>
-                <td>$${(u.balance || 0).toFixed(4)}</td>
-                <td><span style="color:${u.status=='banned'?'var(--red)':'var(--green)'}">${u.status || 'active'}</span></td>
-                <td>
-                    <button class="btn-action" onclick="editBalance('${c.key}', ${u.balance})">Edit $</button>
-                    <button class="btn-action" style="background:#555" onclick="toggleBan('${c.key}', '${u.status}')">Ban/Unban</button>
-                </td></tr>`;
-            });
-            document.getElementById('userBody').innerHTML = h;
+    // --- 5. Task & Data Sync ---
+    userRef.on('value', snap => {
+        const d = snap.val() || { balance: 0 };
+        const b = (d.balance || 0).toFixed(4);
+        document.getElementById('mainBal').innerText = b;
+        document.getElementById('wBal').innerText = b;
+    });
+
+    db.ref('tasks').on('value', s => {
+        let h = ""; s.forEach(c => {
+            const t = c.val(); if(t.status === "on") {
+                h += `<div class="task-card">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                    <b>${t.title}</b> <span style="color:var(--gold)">+$${t.reward}</span></div>
+                    <button class="btn-premium" onclick="doTask('${c.key}','${t.link}',${t.reward})">START TASK</button>
+                </div>`;
+            }
         });
+        document.getElementById('taskList').innerHTML = h || "No Tasks Available.";
+    });
 
-        // Helper Functions
-        function deleteData(path) { if(confirm("Are you sure?")) db.ref(path).remove(); }
-        function updateStatus(path, status) { db.ref(path).update({ status }); alert("Updated!"); }
-        function toggleBan(id, s) { db.ref('users/'+id).update({ status: s == 'banned' ? 'active' : 'banned' }); }
-        function editBalance(id, old) {
-            const n = prompt("Enter new balance:", old);
-            if(n !== null) db.ref('users/'+id).update({ balance: parseFloat(n) });
-        }
-    </script>
+    function doTask(id, link, reward) {
+        tg.openLink(link);
+        setTimeout(() => { openVault(reward); }, 5000); // Open vault after 5s
+    }
+
+    // --- 6. Withdraw ---
+    function withdraw() {
+        const amt = parseFloat(document.getElementById('wAmt').value);
+        if(amt < 1.0) return alert("Min $1.00");
+        userRef.once('value', s => {
+            if(s.val().balance < amt) return alert("Low Balance");
+            userRef.update({ balance: s.val().balance - amt });
+            db.ref('withdrawRequests').push({ uid: user.id, amt, mtd: document.getElementById('wMethod').value, adr: document.getElementById('wAddr').value, status: "Pending" });
+            alert("Request Sent!");
+        });
+    }
+
+    db.ref('methods').on('value', s => {
+        let o = ""; s.forEach(c => { o += `<option>${c.val().name}</option>`; });
+        document.getElementById('wMethod').innerHTML = o;
+    });
+
+    // Timer Sync
+    setInterval(() => {
+        let t = document.getElementById('tradeTimer');
+        let s = parseInt(t.innerText.split(':')[1]);
+        s = s <= 0 ? 60 : s - 1;
+        t.innerText = "00:" + (s < 10 ? '0'+s : s);
+    }, 1000);
+
+</script>
 </body>
 </html>
