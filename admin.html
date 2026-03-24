@@ -3,225 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIYAMBOSS - Elite Admin</title>
+    <title>SIYAMBOSS - Master Admin</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --red: #f6465d; --green: #2ebd85; }
+        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --border: #323539; --green: #2ebd85; --red: #f6465d; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; text-align: center; }
-        .stat-card h2 { margin: 10px 0 0 0; color: var(--gold); font-size: 32px; }
+        h2, h3 { color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 12px; background: #2b2f36; border: 1px solid var(--border); border-radius: 8px; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
+        
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 5px; }
+        .btn-add { background: var(--gold); color: #000; }
+        .btn-broadcast { background: #5d5fef; color: #fff; }
+        .btn-clear { background: var(--red); color: #fff; }
+        .btn-approve { background: var(--green); color: #fff; padding: 5px 10px; width: auto; font-size: 12px; }
+        .btn-reject { background: var(--red); color: #fff; padding: 5px 10px; width: auto; font-size: 12px; }
 
-        .form-box { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--gold); margin-bottom: 30px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0 15px 0; background: #2b2f36; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
-        
-        .table-container { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; overflow-x: auto; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; font-size: 14px; }
-        th { color: var(--gold); text-transform: uppercase; font-size: 11px; }
-
-        button { cursor: pointer; border: none; font-weight: bold; transition: 0.3s; border-radius: 6px; }
-        .btn-main { background: var(--gold); color: #000; width: 100%; padding: 15px; font-size: 16px; }
-        .btn-edit { background: #3498db; color: #fff; padding: 6px 10px; margin-right: 5px; }
-        .btn-off { background: var(--red); color: #fff; padding: 6px 10px; }
-        .btn-on { background: var(--green); color: #fff; padding: 6px 10px; }
-        
-        /* Modal Style */
-        #editModal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); padding:30px; border:2px solid var(--gold); z-index:1001; border-radius:15px; width:90%; max-width:400px; }
-        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; }
+        .list-item { background: #2b2f36; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1 style="color: var(--gold);"><i class="fas fa-tools"></i> SIYAMBOSS MASTER ADMIN</h1>
+    <h1 style="text-align: center; color: var(--gold);"><i class="fas fa-user-shield"></i> SIYAMBOSS ADMIN</h1>
 
-    <div class="grid">
-        <div class="stat-card"><small>Total Users</small><h2 id="totalUsers">0</h2></div>
-        <div class="stat-card"><small>Pending Withdrawal</small><h2 id="pendingCount">0</h2></div>
-        <div class="stat-card"><small>Active Tasks</small><h2 id="activeTasks">0</h2></div>
-    </div>
-
-    <div class="form-box">
-        <h3><i class="fas fa-wallet"></i> Manage Withdraw Methods</h3>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="newMethodName" placeholder="Method Name (e.g. Bkash, Binance)">
-            <button class="btn-main" style="width: 200px;" onclick="addWithdrawMethod()">Add Method</button>
+    <div class="admin-grid">
+        
+        <div class="card">
+            <h3><i class="fas fa-bullhorn"></i> Global Broadcast (SMS)</h3>
+            <textarea id="broadcastMsg" placeholder="Type message for all users..."></textarea>
+            <button class="btn-broadcast" onclick="sendBroadcast()">SEND TO ALL USERS</button>
+            <button class="btn-clear" onclick="clearBroadcast()" style="margin-top:10px;">HIDE NOTIFICATION</button>
         </div>
-        <div id="methodList" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
-    </div>
 
-    <div class="form-box">
-        <h3><i class="fas fa-plus-circle"></i> Create/Publish Mining Node</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <input type="text" id="tTitle" placeholder="Task Name">
-            <input type="number" id="tReward" step="0.01" placeholder="Price ($)">
-            <input type="text" id="tLink" placeholder="Target Link">
-            <input type="number" id="tLimit" placeholder="Target User Limit">
+        <div class="card">
+            <h3><i class="fas fa-plus-circle"></i> Add New Task</h3>
+            <input type="text" id="tTitle" placeholder="Task Title (e.g. Join Telegram)">
+            <input type="text" id="tLink" placeholder="Task Link (https://...)">
+            <input type="number" step="0.0001" id="tReward" placeholder="Reward Amount ($)">
+            <input type="number" id="tTarget" placeholder="Target Members Count">
+            <button class="btn-add" onclick="addTask()">PUBLISH TASK</button>
         </div>
-        <button class="btn-main" onclick="addTask()">Publish Task</button>
+
+        <div class="card">
+            <h3><i class="fas fa-money-bill-wave"></i> Pending Withdrawals</h3>
+            <div id="payoutList">Loading requests...</div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-users"></i> Users Control</h3>
+            <input type="text" id="searchUser" placeholder="Enter User ID to modify balance">
+            <input type="number" id="newBal" placeholder="New Balance Value">
+            <button class="btn-add" onclick="updateUserBalance()">UPDATE BALANCE</button>
+            <div id="userStats" style="margin-top:15px; font-size:12px; color:var(--text-gray);"></div>
+        </div>
+
     </div>
 
-    <div class="table-container">
-        <h3><i class="fas fa-tasks"></i> Active Tasks & Controls</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Task Name</th>
-                    <th>Price</th>
-                    <th>Progress</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="taskStatsBody"></tbody>
-        </table>
+    <div class="card">
+        <h3><i class="fas fa-list"></i> Active Task Management</h3>
+        <div id="adminTaskList"></div>
     </div>
 
-    <div class="table-container">
-        <h3><i class="fas fa-university"></i> Withdrawal Requests</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Method</th>
-                    <th>Address/UID</th>
-                    <th>Amount</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="withdrawBody"></tbody>
-        </table>
-    </div>
-</div>
+    <script>
+        // --- YOUR FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
+            databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
+            projectId: "free-income-8a793"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-<div class="overlay" id="overlay" onclick="closeEdit()"></div>
-<div id="editModal">
-    <h3 class="gold">Edit Task</h3>
-    <input type="hidden" id="editKey">
-    <label>Name</label><input type="text" id="editTitle">
-    <label>Price ($)</label><input type="number" id="editReward" step="0.01">
-    <label>Target Limit</label><input type="number" id="editLimit">
-    <button class="btn-main" onclick="saveEdit()">Save Changes</button>
-</div>
+        // 1. Send Broadcast
+        function sendBroadcast() {
+            const msg = document.getElementById('broadcastMsg').value;
+            if(!msg) return alert("Enter message!");
+            db.ref('broadcast').set(msg).then(() => alert("Broadcast sent successfully!"));
+        }
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
-        databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
-        projectId: "free-income-8a793"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+        function clearBroadcast() {
+            db.ref('broadcast').set(null).then(() => alert("Notification hidden from users."));
+        }
 
-    function init() {
-        db.ref('users').on('value', s => document.getElementById('totalUsers').innerText = s.numChildren());
+        // 2. Add Task
+        function addTask() {
+            const title = document.getElementById('tTitle').value;
+            const link = document.getElementById('tLink').value;
+            const reward = parseFloat(document.getElementById('tReward').value);
+            const target = parseInt(document.getElementById('tTarget').value);
 
-        // Load Withdraw Methods
-        db.ref('withdraw_methods').on('value', s => {
-            const container = document.getElementById('methodList');
-            container.innerHTML = "";
-            s.forEach(child => {
-                container.innerHTML += `<span style="background:#2b2f36; padding:5px 15px; border-radius:20px; border:1px solid var(--gold); font-size:12px;">
-                    ${child.val().name} <i class="fas fa-times" style="cursor:pointer; margin-left:5px; color:var(--red);" onclick="deleteMethod('${child.key}')"></i>
-                </span>`;
+            if(!title || !link || !reward) return alert("Fill all fields!");
+
+            const taskData = {
+                title: title,
+                link: link,
+                reward: reward,
+                targetMembers: target,
+                completedCount: 0,
+                status: "on"
+            };
+
+            db.ref('tasks').push(taskData).then(() => {
+                alert("Task Added!");
+                location.reload();
             });
-        });
+        }
 
-        // Load Withdrawals
+        // 3. Load Withdrawals
         db.ref('withdrawals').on('value', s => {
-            const tbody = document.getElementById('withdrawBody');
-            tbody.innerHTML = "";
-            let pCount = 0;
+            const list = document.getElementById('payoutList');
+            list.innerHTML = "";
             s.forEach(child => {
                 const w = child.val();
                 if(w.status === "Pending") {
-                    pCount++;
-                    tbody.innerHTML += `<tr>
-                        <td>${w.userName}</td><td>${w.exchange}</td><td>${w.address}</td><td>$${w.amount}</td>
-                        <td><button class="btn-on" onclick="manageWithdraw('${child.key}', 'Approved')">Approve</button>
-                        <button class="btn-off" onclick="manageWithdraw('${child.key}', 'Rejected')">Reject</button></td>
-                    </tr>`;
+                    list.innerHTML += `
+                        <div class="list-item">
+                            <div>
+                                <b>${w.userName}</b> ($${w.amount})<br>
+                                <small>${w.exchange}: ${w.address}</small>
+                            </div>
+                            <div>
+                                <button class="btn-approve" onclick="managePayout('${child.key}', 'Approved')">OK</button>
+                                <button class="btn-reject" onclick="managePayout('${child.key}', 'Rejected')">X</button>
+                            </div>
+                        </div>`;
                 }
             });
-            document.getElementById('pendingCount').innerText = pCount;
         });
 
-        // Load Tasks
+        function managePayout(id, status) {
+            db.ref('withdrawals/' + id).update({ status: status })
+            .then(() => alert("Status updated to: " + status));
+        }
+
+        // 4. Update User Balance
+        function updateUserBalance() {
+            const uid = document.getElementById('searchUser').value;
+            const bal = parseFloat(document.getElementById('newBal').value);
+            if(!uid) return alert("Enter User ID");
+            db.ref('users/' + uid).update({ balance: bal })
+            .then(() => alert("Balance updated for UID: " + uid));
+        }
+
+        // 5. Load Active Tasks for Deletion
         db.ref('tasks').on('value', s => {
-            const tbody = document.getElementById('taskStatsBody');
-            tbody.innerHTML = "";
-            let tCount = 0;
+            const list = document.getElementById('adminTaskList');
+            list.innerHTML = "";
             s.forEach(child => {
-                tCount++;
                 const t = child.val();
-                const statusBtn = t.status === 'off' ? 
-                    `<button class="btn-on" onclick="toggleTask('${child.key}', 'on')">Turn ON</button>` : 
-                    `<button class="btn-off" onclick="toggleTask('${child.key}', 'off')">Turn OFF</button>`;
-                
-                tbody.innerHTML += `<tr>
-                    <td>${t.title}</td><td>$${t.reward}</td>
-                    <td>${t.completedCount || 0} / ${t.targetMembers}</td>
-                    <td>${t.status === 'off' ? '<span style="color:red">OFF</span>' : '<span style="color:green">ACTIVE</span>'}</td>
-                    <td>
-                        <button class="btn-edit" onclick="openEdit('${child.key}', '${t.title}', ${t.reward}, ${t.targetMembers})">Edit</button>
-                        ${statusBtn}
-                    </td>
-                </tr>`;
+                list.innerHTML += `
+                    <div class="list-item">
+                        <span>${t.title} ($${t.reward}) - ${t.completedCount}/${t.targetMembers}</span>
+                        <button class="btn-reject" onclick="deleteTask('${child.key}')">DELETE</button>
+                    </div>`;
             });
-            document.getElementById('activeTasks').innerText = tCount;
         });
-    }
 
-    function addTask() {
-        const title = document.getElementById('tTitle').value;
-        const reward = document.getElementById('tReward').value;
-        const link = document.getElementById('tLink').value;
-        const limit = document.getElementById('tLimit').value;
-        if(!title || !reward || !limit) return alert("Fill all fields");
-        db.ref('tasks').push({ title, reward: parseFloat(reward), link, targetMembers: parseInt(limit), completedCount: 0, status: 'on' });
-        alert("Task Added!");
-    }
+        function deleteTask(id) {
+            if(confirm("Are you sure?")) db.ref('tasks/' + id).remove();
+        }
 
-    function toggleTask(key, status) { db.ref('tasks/' + key).update({ status: status }); }
-
-    function openEdit(key, title, reward, limit) {
-        document.getElementById('editKey').value = key;
-        document.getElementById('editTitle').value = title;
-        document.getElementById('editReward').value = reward;
-        document.getElementById('editLimit').value = limit;
-        document.getElementById('editModal').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-    }
-
-    function saveEdit() {
-        const key = document.getElementById('editKey').value;
-        db.ref('tasks/' + key).update({
-            title: document.getElementById('editTitle').value,
-            reward: parseFloat(document.getElementById('editReward').value),
-            targetMembers: parseInt(document.getElementById('editLimit').value)
-        });
-        closeEdit();
-        alert("Task Updated!");
-    }
-
-    function closeEdit() { document.getElementById('editModal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
-
-    function addWithdrawMethod() {
-        const name = document.getElementById('newMethodName').value;
-        if(name) db.ref('withdraw_methods').push({ name });
-        document.getElementById('newMethodName').value = "";
-    }
-
-    function deleteMethod(key) { db.ref('withdraw_methods/' + key).remove(); }
-
-    function manageWithdraw(key, status) { db.ref('withdrawals/' + key).update({ status: status }); }
-
-    init();
-</script>
+    </script>
 </body>
 </html>
