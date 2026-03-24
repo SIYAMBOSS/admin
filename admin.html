@@ -3,129 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIYAMBOSS - Ultimate Admin Control</title>
+    <title>SIYAMBOSS - Master Admin Dashboard</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         :root { --gold: #f3ba2f; --bg: #090b0e; --card: #1e2329; --border: #323539; --green: #2ebd85; --red: #f6465d; --blue: #5d5fef; --text: #eaecef; }
-        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 30px; line-height: 1.6; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 30px; }
         
-        .header-main { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--gold); }
-        .header-main h1 { font-size: 32px; color: var(--gold); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 3px solid var(--gold); padding-bottom: 20px; }
+        .header h1 { font-size: 35px; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; margin: 0; }
         
-        .section-title { font-size: 20px; color: var(--gold); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--gold); padding-left: 15px; }
-        
-        /* Layout Containers */
-        .card { background: var(--card); border-radius: 15px; border: 1px solid var(--border); padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* Forms & Inputs */
-        .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        input, textarea, select { width: 100%; padding: 14px; background: #2b3139; border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 14px; box-sizing: border-box; outline: none; }
-        textarea { height: 100px; resize: none; }
-        
+        .card { background: var(--card); border-radius: 15px; border: 1px solid var(--border); padding: 25px; margin-bottom: 35px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
+        .section-title { font-size: 22px; color: var(--gold); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; border-left: 5px solid var(--gold); padding-left: 15px; }
+
+        /* Forms */
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        input, textarea, select { width: 100%; padding: 15px; background: #2b3139; border: 1px solid var(--border); border-radius: 10px; color: #fff; box-sizing: border-box; outline: none; font-size: 15px; }
+        textarea { height: 120px; resize: none; }
+
         /* Buttons */
         button { cursor: pointer; border: none; font-weight: bold; border-radius: 8px; transition: 0.3s; padding: 12px 20px; }
-        .btn-gold { background: var(--gold); color: #000; width: 100%; font-size: 16px; }
-        .btn-blue { background: var(--blue); color: #fff; width: 100%; }
-        
-        /* Tables & Lists */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; }
-        th { text-align: left; background: #2b3139; color: var(--gold); padding: 15px; font-size: 14px; }
-        td { padding: 15px; border-bottom: 1px solid #2b3139; font-size: 13px; vertical-align: middle; }
-        
-        /* Status Badges */
-        .badge { padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; }
-        .badge-on { background: rgba(46, 189, 133, 0.2); color: var(--green); }
-        .badge-off { background: rgba(246, 70, 93, 0.2); color: var(--red); }
-        .badge-complete { background: var(--blue); color: #fff; }
+        .btn-gold { background: var(--gold); color: #000; width: 100%; font-size: 16px; margin-top: 10px; }
+        .btn-blue { background: var(--blue); color: #fff; width: 100%; font-size: 16px; }
 
-        /* Action Buttons Small */
-        .act-btn { padding: 6px 12px; font-size: 11px; margin-right: 5px; }
-        .act-edit { background: var(--blue); color: #fff; }
-        .act-del { background: var(--red); color: #fff; }
-        .act-toggle { background: #4b5563; color: #fff; }
-        .act-ok { background: var(--green); color: #fff; }
+        /* Tables */
+        .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); background: #161a1e; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: #2b3139; color: var(--gold); padding: 18px; text-align: left; font-size: 14px; text-transform: uppercase; }
+        td { padding: 18px; border-bottom: 1px solid #2b3139; font-size: 14px; vertical-align: middle; }
+        
+        /* Badges & Actions */
+        .badge { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .bg-green { background: rgba(46, 189, 133, 0.2); color: var(--green); }
+        .bg-red { background: rgba(246, 70, 93, 0.2); color: var(--red); }
+        .bg-blue { background: rgba(93, 95, 239, 0.2); color: var(--blue); }
+
+        .op-btn { padding: 8px 14px; font-size: 12px; margin-right: 5px; color: #fff; }
+        .op-edit { background: var(--blue); }
+        .op-ban { background: var(--red); }
+        .op-ok { background: var(--green); }
+        .op-off { background: #4b5563; }
     </style>
 </head>
 <body>
 
-    <div class="header-main">
-        <h1><i class="fas fa-shield-alt"></i> SIYAMBOSS MASTER CONTROL</h1>
+    <div class="header">
+        <h1><i class="fas fa-user-crown"></i> SIYAMBOSS ADMIN</h1>
     </div>
 
     <div class="card">
-        <div class="section-title"><i class="fas fa-bullhorn"></i> Global Notification (24h Auto-Expire)</div>
-        <textarea id="broadcastMsg" placeholder="ইউজারদের জন্য কোনো সুন্দর মেসেজ লিখুন যা ২৪ ঘণ্টা পর স্বয়ংক্রিয়ভাবে মুছে যাবে..."></textarea>
-        <button class="btn-blue" onclick="sendBroadcast()" style="margin-top: 10px;"><i class="fas fa-paper-plane"></i> SEND BROADCAST</button>
+        <div class="section-title"><i class="fas fa-bullhorn"></i> Global Notification (Auto-Expires 24h)</div>
+        <textarea id="broadcastMsg" placeholder="ইউজারদের জন্য কোনো সুন্দর মেসেজ লিখুন যা সব ইউজারের অ্যাপে ২৪ ঘণ্টার জন্য শো করবে..."></textarea>
+        <button class="btn-blue" onclick="sendBroadcast()">SEND BROADCAST TO ALL</button>
     </div>
 
     <div class="card">
-        <div class="section-title"><i class="fas fa-tasks"></i> Add or Update Task Node</div>
+        <div class="section-title"><i class="fas fa-tasks"></i> Task Node Management</div>
         <input type="hidden" id="editTaskId">
-        <div class="input-group">
-            <input type="text" id="tTitle" placeholder="Task Name (e.g., Join Official Group)">
-            <input type="text" id="tLink" placeholder="Task Link (https://t.me/...)">
+        <div class="input-row">
+            <input type="text" id="tTitle" placeholder="Task Name (e.g., Subscribe YouTube)">
+            <input type="text" id="tLink" placeholder="Link (URL)">
         </div>
-        <div class="input-group">
+        <div class="input-row">
             <input type="number" step="0.001" id="tReward" placeholder="Reward Amount ($)">
-            <input type="number" id="tTarget" placeholder="Target Members (Count)">
+            <input type="number" id="tTarget" placeholder="Target Members">
         </div>
-        <button class="btn-gold" id="taskBtn" onclick="addTask()">PUBLISH MINING TASK</button>
+        <button class="btn-gold" id="taskBtn" onclick="addTask()">PUBLISH/UPDATE TASK</button>
         <button id="cancelEdit" style="display:none; background:#4b5563; color:#fff; width:100%; margin-top:10px;" onclick="resetTaskForm()">CANCEL EDIT</button>
     </div>
 
     <div class="card">
-        <div class="section-title"><i class="fas fa-list-ul"></i> Active Task Database</div>
-        <div class="table-container">
+        <div class="section-title"><i class="fas fa-clipboard-list"></i> Active Tasks Database</div>
+        <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Title</th>
+                        <th>Task Name</th>
                         <th>Status</th>
                         <th>Progress</th>
                         <th>Reward</th>
-                        <th>Actions</th>
+                        <th>Action Controls</th>
                     </tr>
                 </thead>
-                <tbody id="adminTaskList"></tbody>
+                <tbody id="taskTable"></tbody>
             </table>
         </div>
     </div>
 
     <div class="card">
-        <div class="section-title"><i class="fas fa-wallet"></i> Payout Management (Detailed)</div>
-        <div class="table-container">
+        <div class="section-title"><i class="fas fa-hand-holding-usd"></i> Withdrawal Payout Requests</div>
+        <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>User Name & ID</th>
+                        <th>User Name & UID</th>
                         <th>Method</th>
-                        <th>Address / Details</th>
+                        <th>Wallet Details</th>
                         <th>Amount</th>
-                        <th>Action</th>
+                        <th>Approval</th>
                     </tr>
                 </thead>
-                <tbody id="payoutList"></tbody>
+                <tbody id="payoutTable"></tbody>
             </table>
         </div>
     </div>
 
     <div class="card">
-        <div class="section-title"><i class="fas fa-users"></i> Registered Users</div>
-        <div class="table-container">
+        <div class="section-title"><i class="fas fa-users-cog"></i> User Management & Control</div>
+        <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
                         <th>User Name</th>
                         <th>User ID</th>
                         <th>Balance</th>
-                        <th>Balance Control</th>
+                        <th>Refer Count</th>
+                        <th>Account Status</th>
+                        <th>Management Actions</th>
                     </tr>
                 </thead>
-                <tbody id="allUserList"></tbody>
+                <tbody id="userTable"></tbody>
             </table>
         </div>
     </div>
@@ -140,16 +139,15 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. Broadcast Logic
+        // 1. Notification
         function sendBroadcast() {
             const msg = document.getElementById('broadcastMsg').value;
             if(!msg) return alert("মেসেজ লিখুন!");
-            const expiry = Date.now() + (24 * 60 * 60 * 1000);
-            db.ref('broadcast').set({ message: msg, expires: expiry })
-            .then(() => alert("নোটিফিকেশন পাঠানো হয়েছে!"));
+            db.ref('broadcast').set({ message: msg, expires: Date.now() + 86400000 });
+            alert("Sent Successfully!");
         }
 
-        // 2. Task Add/Edit/Toggle/Delete
+        // 2. Task Management Logic
         function addTask() {
             const id = document.getElementById('editTaskId').value;
             const title = document.getElementById('tTitle').value;
@@ -157,19 +155,14 @@
             const reward = parseFloat(document.getElementById('tReward').value);
             const target = parseInt(document.getElementById('tTarget').value);
 
-            if(!title || !link || !reward) return alert("সব ঘর পূরণ করুন!");
+            if(!title || !link || !reward) return alert("All fields required!");
 
             const data = { title, link, reward, targetMembers: target };
-
             if(id) {
-                db.ref('tasks/' + id).update(data).then(() => {
-                    alert("Task Updated!");
-                    resetTaskForm();
-                });
+                db.ref('tasks/' + id).update(data).then(() => { alert("Updated!"); resetTaskForm(); });
             } else {
-                data.completedCount = 0;
-                data.status = "on";
-                db.ref('tasks').push(data).then(() => alert("Task Published!"));
+                data.completedCount = 0; data.status = "on";
+                db.ref('tasks').push(data).then(() => alert("Published!"));
             }
         }
 
@@ -179,13 +172,13 @@
             document.getElementById('tLink').value = "";
             document.getElementById('tReward').value = "";
             document.getElementById('tTarget').value = "";
-            document.getElementById('taskBtn').innerText = "PUBLISH MINING TASK";
+            document.getElementById('taskBtn').innerText = "PUBLISH/UPDATE TASK";
             document.getElementById('cancelEdit').style.display = "none";
         }
 
         // 3. Render Tasks
         db.ref('tasks').on('value', s => {
-            const list = document.getElementById('adminTaskList');
+            const list = document.getElementById('taskTable');
             list.innerHTML = "";
             s.forEach(child => {
                 const t = child.val();
@@ -193,13 +186,13 @@
                 list.innerHTML += `
                     <tr>
                         <td><b>${t.title}</b></td>
-                        <td><span class="badge ${t.status === 'on' ? 'badge-on' : 'badge-off'}">${t.status.toUpperCase()}</span></td>
-                        <td>${isComplete ? '<span class="badge badge-complete">COMPLETE</span>' : t.completedCount + '/' + t.targetMembers}</td>
+                        <td><span class="badge ${t.status === 'on' ? 'bg-green' : 'bg-red'}">${t.status.toUpperCase()}</span></td>
+                        <td>${isComplete ? '<span class="badge bg-blue">COMPLETED</span>' : t.completedCount + '/' + t.targetMembers}</td>
                         <td>$${t.reward}</td>
                         <td>
-                            <button class="act-btn act-edit" onclick="editTask('${child.key}')">EDIT</button>
-                            <button class="act-btn act-toggle" onclick="toggleTask('${child.key}', '${t.status}')">ON/OFF</button>
-                            <button class="act-btn act-del" onclick="deleteTask('${child.key}')">DEL</button>
+                            <button class="op-btn op-edit" onclick="editTask('${child.key}')">EDIT</button>
+                            <button class="op-btn op-off" onclick="db.ref('tasks/${child.key}').update({status:'${t.status==='on'?'off':'on'}'})">ON/OFF</button>
+                            <button class="op-btn op-ban" onclick="db.ref('tasks/${child.key}').remove()">DEL</button>
                         </td>
                     </tr>`;
             });
@@ -213,68 +206,65 @@
                 document.getElementById('tLink').value = t.link;
                 document.getElementById('tReward').value = t.reward;
                 document.getElementById('tTarget').value = t.targetMembers;
-                document.getElementById('taskBtn').innerText = "UPDATE TASK DATA";
+                document.getElementById('taskBtn').innerText = "UPDATE DATA NOW";
                 document.getElementById('cancelEdit').style.display = "block";
-                window.scrollTo(0, 300);
             });
         }
 
-        function toggleTask(id, current) {
-            db.ref('tasks/' + id).update({ status: current === 'on' ? 'off' : 'on' });
-        }
-
-        function deleteTask(id) {
-            if(confirm("Are you sure?")) db.ref('tasks/' + id).remove();
-        }
-
-        // 4. Render Withdrawals (Detailed)
+        // 4. Render Withdrawals
         db.ref('withdrawals').on('value', s => {
-            const list = document.getElementById('payoutList');
+            const list = document.getElementById('payoutTable');
             list.innerHTML = "";
             s.forEach(child => {
                 const w = child.val();
                 if(w.status === "Pending") {
                     list.innerHTML += `
                         <tr>
-                            <td><b>${w.userName}</b><br><small>UID: ${w.userId}</small></td>
-                            <td><span class="badge badge-on" style="background:var(--blue); color:#fff;">${w.exchange}</span></td>
+                            <td><b>${w.userName}</b><br><small>${w.userId}</small></td>
+                            <td><span class="badge bg-blue">${w.exchange}</span></td>
                             <td><code>${w.address}</code></td>
-                            <td><b>$${w.amount}</b></td>
+                            <td>$${w.amount}</td>
                             <td>
-                                <button class="act-btn act-ok" onclick="actionPayout('${child.key}', 'Approved')">OK</button>
-                                <button class="act-btn act-del" onclick="actionPayout('${child.key}', 'Rejected')">X</button>
-                            </div>
+                                <button class="op-btn op-ok" onclick="db.ref('withdrawals/${child.key}').update({status:'Approved'})">OK</button>
+                                <button class="op-btn op-ban" onclick="db.ref('withdrawals/${child.key}').update({status:'Rejected'})">X</button>
+                            </td>
                         </tr>`;
                 }
             });
         });
 
-        function actionPayout(id, status) {
-            db.ref('withdrawals/' + id).update({ status: status })
-            .then(() => alert("Request " + status));
-        }
-
-        // 5. Render All Users
+        // 5. Render Users (Ban, Refer, Balance)
         db.ref('users').on('value', s => {
-            const list = document.getElementById('allUserList');
+            const list = document.getElementById('userTable');
             list.innerHTML = "";
             s.forEach(child => {
                 const u = child.val();
+                const isBanned = u.status === 'banned';
                 list.innerHTML += `
                     <tr>
-                        <td>${u.first_name || 'No Name'}</td>
+                        <td><b>${u.first_name || 'Guest'}</b></td>
                         <td><code>${child.key}</code></td>
-                        <td style="color:var(--gold);">$${(u.balance || 0).toFixed(4)}</td>
-                        <td><button class="act-btn act-edit" onclick="setBalance('${child.key}')">SET $</button></td>
+                        <td style="color:var(--gold); font-weight:bold;">$${(u.balance || 0).toFixed(4)}</td>
+                        <td><i class="fas fa-users"></i> ${u.referCount || 0}</td>
+                        <td><span class="badge ${isBanned ? 'bg-red' : 'bg-green'}">${isBanned ? 'BANNED' : 'ACTIVE'}</span></td>
+                        <td>
+                            <button class="op-btn op-edit" onclick="setBal('${child.key}')">SET $</button>
+                            <button class="op-btn ${isBanned ? 'op-ok' : 'op-ban'}" onclick="toggleBan('${child.key}', '${u.status}')">
+                                ${isBanned ? 'UNBAN' : 'BAN'}
+                            </button>
+                        </td>
                     </tr>`;
             });
         });
 
-        function setBalance(uid) {
-            const newB = prompt("Enter new balance for this user:");
-            if(newB !== null) db.ref('users/' + uid).update({ balance: parseFloat(newB) });
+        function setBal(uid) {
+            const b = prompt("Enter new balance:");
+            if(b !== null) db.ref('users/' + uid).update({ balance: parseFloat(b) });
         }
 
+        function toggleBan(uid, current) {
+            db.ref('users/' + uid).update({ status: current === 'banned' ? 'active' : 'banned' });
+        }
     </script>
 </body>
 </html>
