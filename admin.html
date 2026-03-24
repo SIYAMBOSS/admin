@@ -3,81 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIYAMBOSS - Elite Admin Control</title>
+    <title>SIYAMBOSS - Ultimate Admin Control</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --border: #323539; --green: #2ebd85; --red: #f6465d; --blue: #5d5fef; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
+        :root { --gold: #f3ba2f; --bg: #090b0e; --card: #1e2329; --border: #323539; --green: #2ebd85; --red: #f6465d; --blue: #5d5fef; --text: #eaecef; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 30px; line-height: 1.6; }
         
-        .header { text-align: center; padding: 20px; border-bottom: 2px solid var(--gold); margin-bottom: 30px; }
-        .admin-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .header-main { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--gold); }
+        .header-main h1 { font-size: 32px; color: var(--gold); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
         
-        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.3); margin-bottom: 20px; }
-        h3 { color: var(--gold); margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 18px; }
+        .section-title { font-size: 20px; color: var(--gold); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--gold); padding-left: 15px; }
         
-        input, textarea, select { width: 100%; padding: 12px; background: #2b2f36; border: 1px solid var(--border); border-radius: 8px; color: #fff; margin-bottom: 10px; box-sizing: border-box; outline: none; }
+        /* Layout Containers */
+        .card { background: var(--card); border-radius: 15px; border: 1px solid var(--border); padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 5px; }
-        .btn-main { background: var(--gold); color: #000; }
-        .btn-msg { background: var(--blue); color: #fff; }
-        .btn-del { background: var(--red); color: #fff; }
+        /* Forms & Inputs */
+        .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        input, textarea, select { width: 100%; padding: 14px; background: #2b3139; border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 14px; box-sizing: border-box; outline: none; }
+        textarea { height: 100px; resize: none; }
         
-        .item-list { background: #0b0e11; padding: 10px; border-radius: 10px; margin-top: 10px; max-height: 300px; overflow-y: auto; }
-        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; font-size: 13px; }
+        /* Buttons */
+        button { cursor: pointer; border: none; font-weight: bold; border-radius: 8px; transition: 0.3s; padding: 12px 20px; }
+        .btn-gold { background: var(--gold); color: #000; width: 100%; font-size: 16px; }
+        .btn-blue { background: var(--blue); color: #fff; width: 100%; }
         
-        .status-btn { padding: 5px 10px; border-radius: 5px; font-size: 11px; margin-left: 5px; border: none; cursor: pointer; color: #fff; }
-        .edit { background: var(--blue); }
-        .approve { background: var(--green); }
-        .reject { background: var(--red); }
+        /* Tables & Lists */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; }
+        th { text-align: left; background: #2b3139; color: var(--gold); padding: 15px; font-size: 14px; }
+        td { padding: 15px; border-bottom: 1px solid #2b3139; font-size: 13px; vertical-align: middle; }
+        
+        /* Status Badges */
+        .badge { padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+        .badge-on { background: rgba(46, 189, 133, 0.2); color: var(--green); }
+        .badge-off { background: rgba(246, 70, 93, 0.2); color: var(--red); }
+        .badge-complete { background: var(--blue); color: #fff; }
+
+        /* Action Buttons Small */
+        .act-btn { padding: 6px 12px; font-size: 11px; margin-right: 5px; }
+        .act-edit { background: var(--blue); color: #fff; }
+        .act-del { background: var(--red); color: #fff; }
+        .act-toggle { background: #4b5563; color: #fff; }
+        .act-ok { background: var(--green); color: #fff; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1><i class="fas fa-crown"></i> SIYAMBOSS MASTER ADMIN</h1>
-        <p>Full System Control & User Monitoring</p>
-    </div>
-
-    <div class="admin-container">
-        
-        <div class="card">
-            <h3><i class="fas fa-clock"></i> Broadcast SMS (Auto-Expiring)</h3>
-            <textarea id="broadcastMsg" placeholder="ইউজারদের জন্য মেসেজ লিখুন (২৪ ঘণ্টা পর মুছে যাবে)..."></textarea>
-            <button class="btn-msg" onclick="sendBroadcast()">SEND TO ALL USERS</button>
-        </div>
-
-        <div class="card">
-            <h3><i class="fas fa-plus-square"></i> Create/Update Task</h3>
-            <input type="hidden" id="editTaskId">
-            <input type="text" id="tTitle" placeholder="Task Title">
-            <input type="text" id="tLink" placeholder="Link (URL)">
-            <input type="number" step="0.0001" id="tReward" placeholder="Reward ($)">
-            <input type="number" id="tTarget" placeholder="Target Members">
-            <button class="btn-main" id="taskBtn" onclick="addTask()">ADD NEW TASK</button>
-            <button id="cancelEdit" style="display:none; background:#444; color:#fff;" onclick="resetTaskForm()">CANCEL EDIT</button>
-        </div>
-
-        <div class="card">
-            <h3><i class="fas fa-users"></i> All User Database</h3>
-            <div id="allUserList" class="item-list">Loading Users...</div>
-        </div>
-
-        <div class="card">
-            <h3><i class="fas fa-wallet"></i> Pending Payouts</h3>
-            <div class="item-list" id="payoutList">No requests</div>
-        </div>
-
+    <div class="header-main">
+        <h1><i class="fas fa-shield-alt"></i> SIYAMBOSS MASTER CONTROL</h1>
     </div>
 
     <div class="card">
-        <h3><i class="fas fa-tasks"></i> Active Task Management</h3>
-        <div id="adminTaskList" class="item-list"></div>
+        <div class="section-title"><i class="fas fa-bullhorn"></i> Global Notification (24h Auto-Expire)</div>
+        <textarea id="broadcastMsg" placeholder="ইউজারদের জন্য কোনো সুন্দর মেসেজ লিখুন যা ২৪ ঘণ্টা পর স্বয়ংক্রিয়ভাবে মুছে যাবে..."></textarea>
+        <button class="btn-blue" onclick="sendBroadcast()" style="margin-top: 10px;"><i class="fas fa-paper-plane"></i> SEND BROADCAST</button>
+    </div>
+
+    <div class="card">
+        <div class="section-title"><i class="fas fa-tasks"></i> Add or Update Task Node</div>
+        <input type="hidden" id="editTaskId">
+        <div class="input-group">
+            <input type="text" id="tTitle" placeholder="Task Name (e.g., Join Official Group)">
+            <input type="text" id="tLink" placeholder="Task Link (https://t.me/...)">
+        </div>
+        <div class="input-group">
+            <input type="number" step="0.001" id="tReward" placeholder="Reward Amount ($)">
+            <input type="number" id="tTarget" placeholder="Target Members (Count)">
+        </div>
+        <button class="btn-gold" id="taskBtn" onclick="addTask()">PUBLISH MINING TASK</button>
+        <button id="cancelEdit" style="display:none; background:#4b5563; color:#fff; width:100%; margin-top:10px;" onclick="resetTaskForm()">CANCEL EDIT</button>
+    </div>
+
+    <div class="card">
+        <div class="section-title"><i class="fas fa-list-ul"></i> Active Task Database</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Reward</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTaskList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title"><i class="fas fa-wallet"></i> Payout Management (Detailed)</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Name & ID</th>
+                        <th>Method</th>
+                        <th>Address / Details</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="payoutList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title"><i class="fas fa-users"></i> Registered Users</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Name</th>
+                        <th>User ID</th>
+                        <th>Balance</th>
+                        <th>Balance Control</th>
+                    </tr>
+                </thead>
+                <tbody id="allUserList"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAMFOgXzlihlgrKgrVR5puOA7tE9_0KAIY",
             databaseURL: "https://free-income-8a793-default-rtdb.firebaseio.com",
@@ -86,25 +140,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ১. ব্রডকাস্ট উইথ ২৪ আওয়ার অটো ডিলিট
+        // 1. Broadcast Logic
         function sendBroadcast() {
             const msg = document.getElementById('broadcastMsg').value;
-            if(!msg) return alert("Write something!");
-            
-            const expiryTime = Date.now() + (24 * 60 * 60 * 1000); // বর্তমান সময় + ২৪ ঘণ্টা
-            db.ref('broadcast').set({ message: msg, expires: expiryTime })
-            .then(() => alert("Notification sent! Expiring in 24 hours."));
+            if(!msg) return alert("মেসেজ লিখুন!");
+            const expiry = Date.now() + (24 * 60 * 60 * 1000);
+            db.ref('broadcast').set({ message: msg, expires: expiry })
+            .then(() => alert("নোটিফিকেশন পাঠানো হয়েছে!"));
         }
 
-        // ব্রডকাস্ট চেক করার লজিক (অটো ডিলিট রান করবে যখনই এডমিন প্যানেল খুলবেন)
-        db.ref('broadcast').once('value', s => {
-            const data = s.val();
-            if(data && data.expires < Date.now()) {
-                db.ref('broadcast').set(null); // সময় শেষ হলে ডিলিট
-            }
-        });
-
-        // ২. টাস্ক অ্যাড এবং এডিট লজিক
+        // 2. Task Add/Edit/Toggle/Delete
         function addTask() {
             const id = document.getElementById('editTaskId').value;
             const title = document.getElementById('tTitle').value;
@@ -112,9 +157,9 @@
             const reward = parseFloat(document.getElementById('tReward').value);
             const target = parseInt(document.getElementById('tTarget').value);
 
-            if(!title || !link || !reward) return alert("Fill all fields!");
+            if(!title || !link || !reward) return alert("সব ঘর পূরণ করুন!");
 
-            const data = { title, link, reward, targetMembers: target, status: "on" };
+            const data = { title, link, reward, targetMembers: target };
 
             if(id) {
                 db.ref('tasks/' + id).update(data).then(() => {
@@ -123,9 +168,42 @@
                 });
             } else {
                 data.completedCount = 0;
-                db.ref('tasks').push(data).then(() => alert("Task Added!"));
+                data.status = "on";
+                db.ref('tasks').push(data).then(() => alert("Task Published!"));
             }
         }
+
+        function resetTaskForm() {
+            document.getElementById('editTaskId').value = "";
+            document.getElementById('tTitle').value = "";
+            document.getElementById('tLink').value = "";
+            document.getElementById('tReward').value = "";
+            document.getElementById('tTarget').value = "";
+            document.getElementById('taskBtn').innerText = "PUBLISH MINING TASK";
+            document.getElementById('cancelEdit').style.display = "none";
+        }
+
+        // 3. Render Tasks
+        db.ref('tasks').on('value', s => {
+            const list = document.getElementById('adminTaskList');
+            list.innerHTML = "";
+            s.forEach(child => {
+                const t = child.val();
+                const isComplete = t.completedCount >= t.targetMembers;
+                list.innerHTML += `
+                    <tr>
+                        <td><b>${t.title}</b></td>
+                        <td><span class="badge ${t.status === 'on' ? 'badge-on' : 'badge-off'}">${t.status.toUpperCase()}</span></td>
+                        <td>${isComplete ? '<span class="badge badge-complete">COMPLETE</span>' : t.completedCount + '/' + t.targetMembers}</td>
+                        <td>$${t.reward}</td>
+                        <td>
+                            <button class="act-btn act-edit" onclick="editTask('${child.key}')">EDIT</button>
+                            <button class="act-btn act-toggle" onclick="toggleTask('${child.key}', '${t.status}')">ON/OFF</button>
+                            <button class="act-btn act-del" onclick="deleteTask('${child.key}')">DEL</button>
+                        </td>
+                    </tr>`;
+            });
+        });
 
         function editTask(id) {
             db.ref('tasks/' + id).once('value', s => {
@@ -135,36 +213,21 @@
                 document.getElementById('tLink').value = t.link;
                 document.getElementById('tReward').value = t.reward;
                 document.getElementById('tTarget').value = t.targetMembers;
-                document.getElementById('taskBtn').innerText = "UPDATE TASK";
+                document.getElementById('taskBtn').innerText = "UPDATE TASK DATA";
                 document.getElementById('cancelEdit').style.display = "block";
+                window.scrollTo(0, 300);
             });
         }
 
-        function resetTaskForm() {
-            document.getElementById('editTaskId').value = "";
-            document.getElementById('tTitle').value = "";
-            document.getElementById('tLink').value = "";
-            document.getElementById('tReward').value = "";
-            document.getElementById('tTarget').value = "";
-            document.getElementById('taskBtn').innerText = "ADD NEW TASK";
-            document.getElementById('cancelEdit').style.display = "none";
+        function toggleTask(id, current) {
+            db.ref('tasks/' + id).update({ status: current === 'on' ? 'off' : 'on' });
         }
 
-        // ৩. ইউজার লিস্ট লোড করা
-        db.ref('users').on('value', s => {
-            const list = document.getElementById('allUserList');
-            list.innerHTML = "";
-            s.forEach(child => {
-                const u = child.val();
-                list.innerHTML += `
-                    <div class="list-row">
-                        <div><b>${u.first_name || 'Guest'}</b><br><small>UID: ${child.key}</small></div>
-                        <div style="color:var(--gold); font-weight:bold;">$${(u.balance || 0).toFixed(4)}</div>
-                    </div>`;
-            });
-        });
+        function deleteTask(id) {
+            if(confirm("Are you sure?")) db.ref('tasks/' + id).remove();
+        }
 
-        // ৪. উইথড্র ও টাস্ক লিস্ট (আগের মতোই)
+        // 4. Render Withdrawals (Detailed)
         db.ref('withdrawals').on('value', s => {
             const list = document.getElementById('payoutList');
             list.innerHTML = "";
@@ -172,32 +235,45 @@
                 const w = child.val();
                 if(w.status === "Pending") {
                     list.innerHTML += `
-                        <div class="list-row">
-                            <div><b>${w.userName}</b> ($${w.amount})<br><small>${w.address}</small></div>
-                            <div>
-                                <button class="status-btn approve" onclick="db.ref('withdrawals/${child.key}').update({status:'Approved'})">OK</button>
-                                <button class="status-btn reject" onclick="db.ref('withdrawals/${child.key}').update({status:'Rejected'})">X</button>
+                        <tr>
+                            <td><b>${w.userName}</b><br><small>UID: ${w.userId}</small></td>
+                            <td><span class="badge badge-on" style="background:var(--blue); color:#fff;">${w.exchange}</span></td>
+                            <td><code>${w.address}</code></td>
+                            <td><b>$${w.amount}</b></td>
+                            <td>
+                                <button class="act-btn act-ok" onclick="actionPayout('${child.key}', 'Approved')">OK</button>
+                                <button class="act-btn act-del" onclick="actionPayout('${child.key}', 'Rejected')">X</button>
                             </div>
-                        </div>`;
+                        </tr>`;
                 }
             });
         });
 
-        db.ref('tasks').on('value', s => {
-            const list = document.getElementById('adminTaskList');
+        function actionPayout(id, status) {
+            db.ref('withdrawals/' + id).update({ status: status })
+            .then(() => alert("Request " + status));
+        }
+
+        // 5. Render All Users
+        db.ref('users').on('value', s => {
+            const list = document.getElementById('allUserList');
             list.innerHTML = "";
             s.forEach(child => {
-                const t = child.val();
+                const u = child.val();
                 list.innerHTML += `
-                    <div class="list-row">
-                        <span>${t.title} ($${t.reward})</span>
-                        <div>
-                            <button class="status-btn edit" onclick="editTask('${child.key}')">EDIT</button>
-                            <button class="status-btn reject" onclick="db.ref('tasks/${child.key}').remove()">DEL</button>
-                        </div>
-                    </div>`;
+                    <tr>
+                        <td>${u.first_name || 'No Name'}</td>
+                        <td><code>${child.key}</code></td>
+                        <td style="color:var(--gold);">$${(u.balance || 0).toFixed(4)}</td>
+                        <td><button class="act-btn act-edit" onclick="setBalance('${child.key}')">SET $</button></td>
+                    </tr>`;
             });
         });
+
+        function setBalance(uid) {
+            const newB = prompt("Enter new balance for this user:");
+            if(newB !== null) db.ref('users/' + uid).update({ balance: parseFloat(newB) });
+        }
 
     </script>
 </body>
