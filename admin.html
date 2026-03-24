@@ -3,48 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - EarnBearn Control</title>
+    <title>EarnBearn - Super Admin</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --border: #323539; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 20px; }
-        .admin-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
-        h2 { color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border); background: #161a1e; color: #fff; }
-        button { background: var(--gold); color: #000; font-weight: bold; border: none; cursor: pointer; }
-        button:hover { opacity: 0.8; }
-        .item-list { margin-top: 15px; }
-        .item { display: flex; justify-content: space-between; background: #2b2f36; padding: 10px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; }
-        .del-btn { background: #f6465d; width: auto; padding: 5px 10px; margin: 0; }
-        .status-success { color: #2ebd85; font-weight: bold; }
+        :root { --gold: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --border: #323539; --green: #2ebd85; --red: #f6465d; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .admin-box { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        h2 { color: var(--gold); font-size: 18px; margin-bottom: 15px; border-left: 4px solid var(--gold); padding-left: 10px; }
+        
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border); background: #161a1e; color: #fff; outline: none; }
+        button { cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: var(--gold); color: #000; border: none; }
+        .btn-action { width: auto; padding: 5px 10px; font-size: 12px; margin: 2px; }
+        
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th { text-align: left; color: var(--text-gray); border-bottom: 1px solid var(--border); padding: 8px; }
+        td { padding: 10px 8px; border-bottom: 1px solid #2b2f36; }
+        .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; }
     </style>
 </head>
 <body>
 
-    <h1><i class="fas fa-user-shield"></i> EarnBearn Admin Panel</h1>
+    <h1 style="text-align:center; color:var(--gold); margin-bottom:30px;"><i class="fas fa-user-shield"></i> EARNBEARN COMMAND CENTER</h1>
 
-    <div class="admin-card">
-        <h2><i class="fas fa-plus-circle"></i> Add New Task</h2>
-        <input type="text" id="tTitle" placeholder="Task Title (e.g. Subscribe Youtube)">
-        <input type="text" id="tLink" placeholder="Task URL (https://...)">
-        <input type="number" id="tReward" placeholder="Reward Amount (e.g. 0.05)" step="0.01">
-        <button onclick="addTask()">ADD TASK</button>
-        <div id="taskList" class="item-list"></div>
-    </div>
+    <div class="grid-container">
+        
+        <div class="admin-box">
+            <h2><i class="fas fa-plus"></i> 1. Add New Task</h2>
+            <input type="text" id="tName" placeholder="Task Name">
+            <input type="text" id="tLink" placeholder="Task Link (URL)">
+            <input type="number" id="tMember" placeholder="Target Members (e.g. 100)">
+            <input type="number" id="tReward" placeholder="Reward Amount (e.g. 0.05)" step="0.01">
+            <button class="btn-add" onclick="addTask()">CREATE TASK</button>
+        </div>
 
-    <div class="admin-card">
-        <h2><i class="fas fa-wallet"></i> Manage Payment Methods</h2>
-        <input type="text" id="mName" placeholder="Method Name (e.g. Bkash / Binance / UID)">
-        <button onclick="addMethod()" style="background: #2ebd85; color: #fff;">ADD METHOD</button>
-        <div id="methodList" class="item-list"></div>
-    </div>
+        <div class="admin-box">
+            <h2><i class="fas fa-tasks"></i> 2. Task Management</h2>
+            <div style="overflow-x:auto;">
+                <table id="taskTable">
+                    <thead><tr><th>Name</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="taskBody"></tbody>
+                </table>
+            </div>
+        </div>
 
-    <div class="admin-card">
-        <h2><i class="fas fa-hand-holding-usd"></i> Pending Withdrawals</h2>
-        <div id="withdrawList" class="item-list"></div>
+        <div class="admin-box">
+            <h2><i class="fas fa-wallet"></i> 3. Payment Methods</h2>
+            <input type="text" id="mName" placeholder="Method (e.g. Bkash)">
+            <input type="number" id="mLimit" placeholder="Min Limit (e.g. 1.0)">
+            <input type="text" id="mAddress" placeholder="Note/Instruction">
+            <button class="btn-add" style="background:var(--green); color:#fff;" onclick="addMethod()">ADD METHOD</button>
+            <div id="methodList" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="admin-box" style="grid-column: span 2;">
+            <h2><i class="fas fa-file-invoice-dollar"></i> 4. Withdrawal Requests</h2>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>User (UID)</th><th>Amount</th><th>Method</th><th>Details</th><th>Action</th></tr></thead>
+                    <tbody id="withdrawBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="admin-box" style="grid-column: span 2;">
+            <h2><i class="fas fa-users"></i> 5. Total User List</h2>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Name (UID)</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="userBody"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -56,64 +92,86 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- Task Functions ---
+        // --- 1. Add Task ---
         function addTask() {
-            const title = document.getElementById('tTitle').value;
+            const name = document.getElementById('tName').value;
             const link = document.getElementById('tLink').value;
-            const reward = parseFloat(document.getElementById('tReward').value);
-            if(!title || !link || !reward) return alert("Fill all fields");
-            db.ref('tasks').push({ title, link, reward, status: "on" });
-            alert("Task Added!");
+            const member = document.getElementById('tMember').value;
+            const reward = document.getElementById('tReward').value;
+            if(!name || !link) return alert("Fill all!");
+            db.ref('tasks').push({ title: name, link, target: member, reward: parseFloat(reward), status: "on" });
+            alert("Task Added");
         }
 
+        // --- 2. Task List Management ---
         db.ref('tasks').on('value', s => {
             let h = ""; s.forEach(c => {
-                h += `<div class="item"><span>${c.val().title} ($${c.val().reward})</span> 
-                <button class="del-btn" onclick="deleteNode('tasks/${c.key}')">Delete</button></div>`;
+                const t = c.val();
+                h += `<tr><td>${t.title}</td>
+                <td><span class="status-badge" style="background:${t.status=='on'?'var(--green)':'var(--red)'}">${t.status}</span></td>
+                <td>
+                    <button class="btn-action" onclick="toggleTask('${c.key}', '${t.status}')">On/Off</button>
+                    <button class="btn-action" style="background:var(--red)" onclick="deleteData('tasks/${c.key}')">Del</button>
+                </td></tr>`;
             });
-            document.getElementById('taskList').innerHTML = h;
+            document.getElementById('taskBody').innerHTML = h;
         });
+        function toggleTask(id, s) { db.ref('tasks/'+id).update({ status: s == 'on' ? 'off' : 'on' }); }
 
-        // --- Method Functions (নতুন লজিক) ---
+        // --- 3. Manage Payment Methods ---
         function addMethod() {
             const name = document.getElementById('mName').value;
-            if(!name) return alert("Enter method name");
-            db.ref('methods').push({ name });
-            document.getElementById('mName').value = "";
-            alert("Method Added!");
+            const limit = document.getElementById('mLimit').value;
+            if(!name) return alert("Name missing");
+            db.ref('methods').push({ name, limit, address: document.getElementById('mAddress').value });
         }
-
         db.ref('methods').on('value', s => {
             let h = ""; s.forEach(c => {
-                h += `<div class="item"><span><i class="fas fa-check"></i> ${c.val().name}</span> 
-                <button class="del-btn" onclick="deleteNode('methods/${c.key}')">Remove</button></div>`;
+                h += `<div style="background:#2b2f36; padding:8px; margin:5px 0; border-radius:5px; display:flex; justify-content:space-between;">
+                <span>${c.val().name} ($${c.val().limit})</span>
+                <button class="btn-action" style="background:var(--red)" onclick="deleteData('methods/${c.key}')">X</button></div>`;
             });
             document.getElementById('methodList').innerHTML = h;
         });
 
-        // --- Withdraw Requests ---
+        // --- 4. Withdraw List ---
         db.ref('withdrawRequests').on('value', s => {
             let h = ""; s.forEach(c => {
                 const r = c.val();
                 if(r.status === "Pending") {
-                    h += `<div class="item" style="flex-direction:column; gap:5px;">
-                        <span><b>User:</b> ${r.name} | <b>Amt:</b> $${r.amt}</span>
-                        <span><b>Method:</b> ${r.mtd} | <b>Details:</b> ${r.adr}</span>
-                        <button onclick="approveWithdraw('${c.key}')" style="background:#2ebd85; margin:5px 0;">APPROVE & PAY</button>
-                    </div>`;
+                    h += `<tr><td>${r.name}<br>(${r.uid})</td><td>$${r.amt}</td><td>${r.mtd}</td><td>${r.adr}</td>
+                    <td>
+                        <button class="btn-action" style="background:var(--green)" onclick="updateStatus('withdrawRequests/${c.key}', 'Success')">Approve</button>
+                        <button class="btn-action" style="background:var(--red)" onclick="updateStatus('withdrawRequests/${c.key}', 'Rejected')">Reject</button>
+                    </td></tr>`;
                 }
             });
-            document.getElementById('withdrawList').innerHTML = h || "No pending requests.";
+            document.getElementById('withdrawBody').innerHTML = h || "<tr><td colspan='5' style='text-align:center'>No Pending Requests</td></tr>";
         });
 
-        function approveWithdraw(key) {
-            if(confirm("Mark as Paid?")) {
-                db.ref('withdrawRequests/' + key).update({ status: "Success" });
-                alert("Updated!");
-            }
-        }
+        // --- 5. User List Management ---
+        db.ref('users').on('value', s => {
+            let h = ""; s.forEach(c => {
+                const u = c.val();
+                h += `<tr><td>${u.first_name}<br>(${c.key})</td>
+                <td>$${(u.balance || 0).toFixed(4)}</td>
+                <td><span style="color:${u.status=='banned'?'var(--red)':'var(--green)'}">${u.status || 'active'}</span></td>
+                <td>
+                    <button class="btn-action" onclick="editBalance('${c.key}', ${u.balance})">Edit $</button>
+                    <button class="btn-action" style="background:#555" onclick="toggleBan('${c.key}', '${u.status}')">Ban/Unban</button>
+                </td></tr>`;
+            });
+            document.getElementById('userBody').innerHTML = h;
+        });
 
-        function deleteNode(path) { if(confirm("Are you sure?")) db.ref(path).remove(); }
+        // Helper Functions
+        function deleteData(path) { if(confirm("Are you sure?")) db.ref(path).remove(); }
+        function updateStatus(path, status) { db.ref(path).update({ status }); alert("Updated!"); }
+        function toggleBan(id, s) { db.ref('users/'+id).update({ status: s == 'banned' ? 'active' : 'banned' }); }
+        function editBalance(id, old) {
+            const n = prompt("Enter new balance:", old);
+            if(n !== null) db.ref('users/'+id).update({ balance: parseFloat(n) });
+        }
     </script>
 </body>
 </html>
